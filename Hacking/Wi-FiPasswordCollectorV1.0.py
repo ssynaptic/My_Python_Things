@@ -27,9 +27,12 @@ contraseñas:\n""")
             print("""\nEste programa se cerrara dentro de 60 segundos.\n
 Tambien puede ver el archivo NETWORKS.txt en el que se encuentran las redes
 con sus respectivas contraseñas""")
-            file = open("NETWORKS.txt", "w+")
-            file.write(str(wifi_networks))
-            file.close()
+##            file = open("NETWORKS.txt", "w+")
+##            file.write("Red/Contraseña\n")
+##            file.write(str(wifi_networks))
+##            file.close()
+            with open("NETWORKS.txt", "w+") as file:
+                file.write(str(wifi_networks))
         else:
             print("No pudimos encontrar redes disponibles")
 
