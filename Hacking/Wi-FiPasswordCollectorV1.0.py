@@ -5,7 +5,7 @@ if __name__ == "__main__":
     try:
         print("Obtaining Avaiable Networks")
         networks = sp.run(["netsh", "wlan", "show",
-        "profiles"],capture_output=True).stdout.decode()
+        "profiles"],capture_output=True).stdout.decode("latin1")
         profiles = re.findall("Perfil de todos los usuarios\s+:\s(.*)\r",
         networks)
 
@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
             for i in profiles:
                 profile_details = sp.run(["netsh", "wlan", "show", "profile",
-                f"name={i}", "key=clear"], capture_output=True).stdout.decode()
+                f"name={i}", "key=clear"], capture_output=True).stdout.decode("latin1")
                 password = re.findall("Contenido de la clave\s+:\s+(.*)\r",
                 profile_details)
                 wifi_networks.update({i:password})
@@ -27,10 +27,7 @@ contraseñas:\n""")
             print("""\nEste programa se cerrara dentro de 60 segundos.\n
 Tambien puede ver el archivo NETWORKS.txt en el que se encuentran las redes
 con sus respectivas contraseñas""")
-##            file = open("NETWORKS.txt", "w+")
-##            file.write("Red/Contraseña\n")
-##            file.write(str(wifi_networks))
-##            file.close()
+
             with open("NETWORKS.txt", "w+") as file:
                 file.write(str(wifi_networks))
         else:
