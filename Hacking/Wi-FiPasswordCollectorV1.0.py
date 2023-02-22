@@ -28,8 +28,9 @@ contraseñas:\n""")
 Tambien puede ver el archivo NETWORKS.txt en el que se encuentran las redes
 con sus respectivas contraseñas""")
 
-            with open("NETWORKS.txt", "w+") as file:
-                file.write(str(wifi_networks))
+            with open("NETWORKS.txt", "a+") as file:
+                file.write("Red/Contraseña\n\r")
+                file.write(f"{wifi_networks}\n\r")
         else:
             print("No pudimos encontrar redes disponibles")
 
