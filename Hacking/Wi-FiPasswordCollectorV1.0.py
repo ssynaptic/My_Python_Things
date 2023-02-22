@@ -1,8 +1,10 @@
 import subprocess as sp
-import re, time, sys
+import re, time, sys, platform
 
 if __name__ == "__main__":
     try:
+        if platform.system() != ("Windows"):
+            print("Este programa solo funciona en Windows")
         print("Obtaining Avaiable Networks")
         networks = sp.run(["netsh", "wlan", "show",
         "profiles"],capture_output=True).stdout.decode("latin1")
@@ -28,7 +30,7 @@ contraseñas:\n""")
 Tambien puede ver el archivo NETWORKS.txt en el que se encuentran las redes
 con sus respectivas contraseñas""")
 
-            with open("NETWORKS.txt", "a+") as file:
+            with open("NETWORKS.txt", "at+") as file:
                 file.write("Red/Contraseña\n\r")
                 file.write(f"{wifi_networks}\n\r")
         else:
