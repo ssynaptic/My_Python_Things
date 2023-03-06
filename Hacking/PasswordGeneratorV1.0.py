@@ -22,7 +22,11 @@ def get_arguments():
     return args
     
 if __name__ == "__main__":
+    try:        
         arguments = get_arguments()
         print("The new password is below\n\r")
         generate_password(arguments.length)
+        print("This Program Will Close On 60 Seconds", flush=True)
         sleep(60)
+    except KeyboardInterrupt:
+        print("\nDetected CTRL + C, Closing")

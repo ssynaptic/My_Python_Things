@@ -10,7 +10,7 @@ def get_arguments():
 	return args
 
 def scan(gateway):
-	answers = scapy.srp(scapy.Ether(dst="ff:ff:ff:ff:ff:ff")/scapy.ARP(pdst=gateway), timeout=1, verbose=False)[0]
+	answers = scapy.srp(scapy.Ether(dst="ff:ff:ff:ff:ff:ff")/scapy.ARP(pdst=gateway), timeout=5, verbose=False)[0]
 	clients_list = []
 	for element in answers:
 		client_dict = {"IP":element[1].psrc, "MAC":element[1].hwsrc}
