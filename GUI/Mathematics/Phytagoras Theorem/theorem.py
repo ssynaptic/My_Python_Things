@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter.colorchooser import askcolor
 from tkinter import messagebox
 from math import sqrt
+from os import path
 
 def change_color():
     color = askcolor(title="Choose The Background Color")
@@ -47,9 +48,10 @@ quiere realizar.
 Si va a dejar un valor en blanco debe ponerlo en 0""")
 
 if __name__ == "__main__":
+    images_folder = path.join(path.dirname(__file__), "images")
     root = tk.Tk()
     root.geometry("300x255")
-    root.iconbitmap("icon.ico")
+    root.iconbitmap(path.join(images_folder, "icon.ico"))
     root.title("Phytagoras Theorem")
     root.config(bd=3, relief="sunken")
     
