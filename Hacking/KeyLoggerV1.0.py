@@ -35,8 +35,8 @@ def send_report():
             s.ehlo()
             s.starttls()
             s.ehlo()
-            s.login("theklggerdead@hotmail.com", "Euf5g-qBFZPX*t5")
-            s.sendmail("theklggerdead@hotmail.com", "juanchislozano08@gmail.com",
+            s.login("<EMAIL>", "<PASSWORD>")
+            s.sendmail("<EMAIL>", "EMAIL")
             msg.as_string())
 
         
