@@ -1,7 +1,17 @@
 from sqlite3 import connect
 from os.path import dirname, join, isfile
-from string import ascii_lowercase, ascii_uppercase
 
+def valid(id=None):
+    conn = connect("contacts.db")
+    cursor = conn.cursor()
+    cursor.execute(f"""SELECT id FROM PEOPLE
+    WHERE id={id};""")
+    if cursor.fetchall():
+        return True
+    else:
+        return False
+    conn.commit()
+    conn.close()
 class App:
     def __init__(self):
         print("Welcome To The Contact Book\n")
@@ -37,21 +47,19 @@ class App:
         cursor.execute("""SELECT id, name, number 
 FROM PEOPLE""")
         for i in cursor.fetchall():
-            print(f"{i[0]} - {i[1]}: {i[2]}")
+            print(f"\n{i[0]} - {i[1]}: {i[2]}\n")
         conn.commit()
         conn.close()
     def update_contact(self):
         self.see_contacts()
         contact = int(input("Select A Contact Entering His ID Number: "))
-        conn = connect("contacts.db")
-        cursor = conn.cursor()
-        cursor.execute(f"""SELECT id FROM PEOPLE 
-        WHERE id={contact};""")
-        if cursor.fetchall():
+        if valid(contact):
             menu = ("""Select An Option
 1- Name
 2- Number\n""")
             election = int(input(menu))
+            conn = connect("contacts.db")
+            cursor = conn.cursor()
             match election:
                 case 1:
                     arg = input("Enter The Name: ")
@@ -65,15 +73,32 @@ FROM PEOPLE""")
                     cursor.execute(instruction)
                 case _:
                     print("Enter A Valid Option")
-        conn.commit()
-        conn.close()
+            conn.commit()
+            conn.close()
+        else:
+            print("\nEnter A Valid Number\n")
+    def delete_contact(self):
+        self.see_contacts()
+        contact = int(input("Select A Contact Entering His ID Number: "))
+        if valid(contact):
+            instruction = (f"""DELETE FROM PEOPLE WHERE
+            id={contact}""")
+            conn = connect("contacts.db")
+            cursor = conn.cursor()
+            cursor.execute(instruction)
+            conn.commit()
+            conn.close()
+            if not valid(contact):
+                print(f"\nSuccesfully Deleted The Contact {contact}\n")
+        else:
+            print("\nEnter A Valid Number")
 if __name__ == ("__main__"):
     app = App()
     if not isfile(join(dirname(__file__), "contacts.db")):
         app.create_db()
         app.create_table()
     while True:
-        menu = ("""Select An Option:
+        menu = ("""Select An Option:\n
 1- Create Contact
 2- See Contacts
 3- Update Contact
@@ -88,6 +113,8 @@ if __name__ == ("__main__"):
                 app.see_contacts()
             case 3:
                 app.update_contact()
+            case 4:
+                app.delete_contact()
             case 5:
                 exit(0)
             case _:
