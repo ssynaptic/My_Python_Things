@@ -1,5 +1,6 @@
 from sqlite3 import connect
 from os.path import dirname, join, isfile
+import sys
 
 def valid(id=None):
     conn = connect("contacts.db")
@@ -93,29 +94,32 @@ FROM PEOPLE""")
         else:
             print("\nEnter A Valid Number")
 if __name__ == ("__main__"):
-    app = App()
-    if not isfile(join(dirname(__file__), "contacts.db")):
-        app.create_db()
-        app.create_table()
-    while True:
-        menu = ("""Select An Option:\n
+    try:
+        app = App()
+        if not isfile(join(dirname(__file__), "contacts.db")):
+            app.create_db()
+            app.create_table()
+        while True:
+            menu = ("""Select An Option:\n
 1- Create Contact
 2- See Contacts
 3- Update Contact
 4- Delete Contact
 5- Exit\n""")
-        print(menu)
-        election = int(input("Your Option: "))
-        match election:
-            case 1:
-                app.create_contact()
-            case 2:
-                app.see_contacts()
-            case 3:
-                app.update_contact()
-            case 4:
-                app.delete_contact()
-            case 5:
-                exit(0)
-            case _:
-                print("Please Select A Valid Option\n")
+            print(menu)
+            election = int(input("Your Option: "))
+            match election:
+                case 1:
+                    app.create_contact()
+                case 2:
+                    app.see_contacts()
+                case 3:
+                    app.update_contact()
+                case 4:
+                    app.delete_contact()
+                case 5:
+                    sys.exit()
+                case _:
+                    print("\nPlease Select A Valid Option\n")
+    except:
+        print("\nAn Unexpected Error Has Ocurred\n")            
