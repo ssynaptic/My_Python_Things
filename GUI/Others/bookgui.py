@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from os.path import join, dirname, isfile
 from tkinter.colorchooser import askcolor
+from tkinter.messagebox import showinfo
 from sqlite3 import connect
 from PIL import ImageTk, Image
 
@@ -20,6 +21,17 @@ class Database:
             name TEXT (15),
             number TEXT (15)
         )""")
+    def get_contacts(self):
+    	conn = connect("contacts.db")
+    	cursor = conn.cursor()
+    	cursor.execute("""SELECT *
+    	FROM PEOPLE""")
+    	return cursor.fetchall()
+    	conn.commit()
+    	conn.close()
+    	
+class Window(tk.Toplevel):
+	pass
 class App(tk.Tk):
     def __init__(self):
         self.database = Database()
@@ -27,10 +39,12 @@ class App(tk.Tk):
             self.database.create_database()
             self.database.create_table()
         super().__init__()
-        self.title("Contact Book")
-        self.geometry("400x350+200+150")
+        self.geometry("500x400")
+        self.update()
+        self.center_window(self, 500, 400)
         self.resizable(False, False)
-        self.config(bg="spring green", bd=0)
+
+        self.config(bg="white", bd=0)
 
         self.menu_bar = tk.Menu()
 
@@ -54,8 +68,8 @@ class App(tk.Tk):
         self.style.configure("Section.TFrame", background="red",
         borderwidth=2, relief="solid", width=80, height=346)
         self.section_buttons = ttk.Frame(self, 
-        style="Section.TFrame", width=80, 
-        height=346).place(x=2, y=2)
+        style="Section.TFrame", width=90, 
+        height=395).place(x=2, y=2)
 
         self.style.configure("Add.TButton", background="white",
         borderwidth=2, relief="solid", padding=2)
@@ -64,7 +78,7 @@ class App(tk.Tk):
         "add_contact.png")).resize((50, 50)))
 
         self.add_button = ttk.Button(self, image=self.add_contact_image, 
-        style="Add.TButton").place(x=12, y=8)
+        style="Add.TButton", command=self.add_contact).place(x=17, y=8)
 
         self.style.configure("Update.TButton", background="white",
         borderwidth=2, relief="solid", padding=10)
@@ -73,7 +87,7 @@ class App(tk.Tk):
         "update_contact.png")).resize((34, 34)))
 
         self.update_contact = ttk.Button(self, image=self.update_contact_image,
-        style="Update.TButton").place(x=12, y=74)
+        style="Update.TButton").place(x=17, y=74)
 
         self.style.configure("Delete.TButton", background="white", 
         borderwidth=2, relief="solid", padding=6)
@@ -82,11 +96,57 @@ class App(tk.Tk):
         "delete_contact.png")).resize((42, 42)))
 
         self.delete_contact = ttk.Button(self, image=self.delete_contact_image,
-        style="Delete.TButton").place(x=12, y=140)
+        style="Delete.TButton").place(x=17, y=140)
+        
+        self.show_contacts()
+
+    def center_window(self, window=None, width=None, height=None):
+        window.geometry(f"{width}x{height}")
+        window.update()
+        screen_width = window.winfo_screenwidth()
+        screen_height = window.winfo_screenheight()
+
+        x = int((screen_width / 2) - (window.winfo_width() / 2))
+        y = int((screen_height / 2) - (window.winfo_height() / 2) - 30)
+
+        window.geometry(f"{width}x{height}+{x}+{y}")
 
     def change_color(self, event=None):
         color = askcolor(title="Background Color")    
         self.config(bg=color[1])
+        
+    def show_contacts(self):
+    	contacts = self.database.get_contacts()
+    	style = ttk.Style()
+    	self.style.configure("Items.TLabel", background="white",
+    	foreground="black", borderwidth=2, relief="solid",
+    	padding=6)
+    	if contacts:
+    		y = 2
+    		for i in contacts:
+    		    show = ttk.Label(self, text=f"ID : {i[0]} | Name : {i[1]} | Number : {i[2]}",
+    			style="Items.TLabel", width=46).place(x=96, y=y)
+    		    y += 40
+    		    
+    def add_contact(self):
+        window = tk.Toplevel()
+        window.geometry("300x200")
+        window.update()
+        self.center_window(window, 300, 200)
+        window.resizable(False, False)
+        window.title("Add Contact")
+
+        self.style.configure("Indications.TLabel", background="white", 
+        foreground="black", borderwidth=2, relief="solid")
+
+        indication1 = ttk.Label(window, text="Name", style="Indications.TLabel",
+        width=10).pack(padx=20, pady=10)
+        
+        self.style.configure("NnN.TEntry", background="white",
+        foreground="black", font=("Hack", 12), borderwidth=2,
+        relief="solid", anchor=tk.CENTER)
+        
+        name = ttk.Entry(window, cursor="hand2", width=7).pack(padx=20, pady=10)
 
 if __name__ == ("__main__"):
     app = App()
