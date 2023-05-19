@@ -2,9 +2,10 @@ import tkinter as tk
 from tkinter import ttk
 from os.path import join, dirname, isfile
 from tkinter.colorchooser import askcolor
-from tkinter.messagebox import showinfo
+from tkinter.messagebox import showinfo, showerror
 from sqlite3 import connect
 from PIL import ImageTk, Image
+from customtkinter import CTkEntry, CTkButton
 
 class Database:
     def __init__(self):
@@ -29,9 +30,22 @@ class Database:
     	return cursor.fetchall()
     	conn.commit()
     	conn.close()
-    	
-class Window(tk.Toplevel):
-	pass
+
+    def create_contact(self, name=None, number=None):
+        error = lambda : showerror(title="Error", message="You Must Provide The Two Required Fields")
+        if not str(name.get()):
+            error()
+        if not str(number.get()):
+            error()
+        conn = connect("contacts.db")
+        cursor = conn.cursor()
+        instruction = (f"""INSERT INTO PEOPLE (name, number)
+                           VALUES (\"{name.get()}\", \"{number.get()}\")""")
+        cursor.execute(instruction)
+        conn.commit()
+        conn.close()
+
+        showinfo(title="Succes", message="Contact Succesfully Created")
 class App(tk.Tk):
     def __init__(self):
         self.database = Database()
@@ -40,17 +54,18 @@ class App(tk.Tk):
             self.database.create_table()
         super().__init__()
         self.geometry("500x400")
+        self.title("Contact Book")
         self.update()
         self.center_window(self, 500, 400)
         self.resizable(False, False)
 
         self.config(bg="white", bd=0)
 
+        self.images_folder = join(dirname(__file__), "img")
+        
         self.menu_bar = tk.Menu()
 
         self.menu_edit =  tk.Menu(self.menu_bar, tearoff=False)
-
-        self.images_folder = join(dirname(__file__), "img")
 
         self.color_image  = tk.PhotoImage(file=join(self.images_folder, "color.png"))
         
@@ -130,24 +145,38 @@ class App(tk.Tk):
     		    
     def add_contact(self):
         window = tk.Toplevel()
-        window.geometry("300x200")
+        window.geometry("300x160")
         window.update()
         self.center_window(window, 300, 200)
         window.resizable(False, False)
         window.title("Add Contact")
 
         self.style.configure("Indications.TLabel", background="white", 
-        foreground="black", borderwidth=2, relief="solid")
+        foreground="black", borderwidth=2, relief="solid", anchor="center")
 
         indication1 = ttk.Label(window, text="Name", style="Indications.TLabel",
-        width=10).pack(padx=20, pady=10)
+        width=10).pack(padx=20, pady=5)
         
-        self.style.configure("NnN.TEntry", background="white",
-        foreground="black", font=("Hack", 12), borderwidth=2,
-        relief="solid", anchor=tk.CENTER)
-        
-        name = ttk.Entry(window, cursor="hand2", width=7).pack(padx=20, pady=10)
+        name = CTkEntry(window, placeholder_text="Ex: Elliot Alderson", 
+        width=140, height=25, border_width=2, corner_radius=10, 
+        justify="center", font=("Hack", 12), text_color="red")
 
+        name.pack(padx=10, pady=4)
+        
+        indication2 = ttk.Label(window, text="Number", style="Indications.TLabel",
+        width=10).pack(padx=20, pady=5)
+        
+        number = CTkEntry(window, placeholder_text="Ex: +16785736408", width=140, height=25,
+        border_width=2, corner_radius=10, justify="center", font=("Hack", 12),
+        text_color="red")
+
+        number.pack(padx=10, pady=4)
+
+        create_button = CTkButton(window, text="Create Contact", font=("Hack", 12),
+        width=90, height=25, corner_radius=10, border_width=2, fg_color="white", 
+        hover_color="#F0EAE9", border_color="red", text_color="black", 
+        anchor="center", command=lambda : self.database.create_contact(name, 
+        number)).pack(padx=10, pady=4)
 if __name__ == ("__main__"):
     app = App()
     app.mainloop()
