@@ -5,7 +5,8 @@ from tkinter.colorchooser import askcolor
 from tkinter.messagebox import showinfo, showerror
 from sqlite3 import connect
 from PIL import ImageTk, Image
-from customtkinter import CTkEntry, CTkButton
+from customtkinter import CTkEntry, CTkButton, CTkComboBox
+from string import ascii_uppercase, ascii_lowercase
 
 class Database:
     def __init__(self):
@@ -31,21 +32,27 @@ class Database:
     	conn.commit()
     	conn.close()
 
-    def create_contact(self, name=None, number=None):
-        error = lambda : showerror(title="Error", message="You Must Provide The Two Required Fields")
-        if not str(name.get()):
+    def create_contact(self, name, number):
+        error = lambda : showerror(title="Error", message="You Must Provide The Number")
+        if not number.get():
             error()
-        if not str(number.get()):
-            error()
-        conn = connect("contacts.db")
-        cursor = conn.cursor()
-        instruction = (f"""INSERT INTO PEOPLE (name, number)
-                           VALUES (\"{name.get()}\", \"{number.get()}\")""")
-        cursor.execute(instruction)
-        conn.commit()
-        conn.close()
+        counter = 0
+        chars = ascii_lowercase + ascii_uppercase
+        for char in number.get():
+        	if char in chars:
+        		counter += 1
+        if counter >= 1:
+        	error()
+        else:    
+            conn = connect("contacts.db")
+            cursor = conn.cursor()
+            instruction = (f"""INSERT INTO PEOPLE (name, number)
+                               VALUES (\"{name.get()}\", \"{number.get()}\")""")
+            cursor.execute(instruction)
+            conn.commit()
+            conn.close()
 
-        showinfo(title="Succes", message="Contact Succesfully Created")
+            showinfo(title="Succes", message="Contact Succesfully Created")
 class App(tk.Tk):
     def __init__(self):
         self.database = Database()
@@ -57,7 +64,7 @@ class App(tk.Tk):
         self.title("Contact Book")
         self.update()
         self.center_window(self, 500, 400)
-        self.resizable(False, False)
+        self.resizable(0, 0)
 
         self.config(bg="white", bd=0)
 
@@ -102,7 +109,7 @@ class App(tk.Tk):
         "update_contact.png")).resize((34, 34)))
 
         self.update_contact = ttk.Button(self, image=self.update_contact_image,
-        style="Update.TButton").place(x=17, y=74)
+        style="Update.TButton", command=self.update_contact).place(x=17, y=74)
 
         self.style.configure("Delete.TButton", background="white", 
         borderwidth=2, relief="solid", padding=6)
@@ -112,9 +119,7 @@ class App(tk.Tk):
 
         self.delete_contact = ttk.Button(self, image=self.delete_contact_image,
         style="Delete.TButton").place(x=17, y=140)
-        
         self.show_contacts()
-
     def center_window(self, window=None, width=None, height=None):
         window.geometry(f"{width}x{height}")
         window.update()
@@ -148,7 +153,7 @@ class App(tk.Tk):
         window.geometry("300x160")
         window.update()
         self.center_window(window, 300, 200)
-        window.resizable(False, False)
+        window.resizable(0, 0)
         window.title("Add Contact")
 
         self.style.configure("Indications.TLabel", background="white", 
@@ -175,8 +180,22 @@ class App(tk.Tk):
         create_button = CTkButton(window, text="Create Contact", font=("Hack", 12),
         width=90, height=25, corner_radius=10, border_width=2, fg_color="white", 
         hover_color="#F0EAE9", border_color="red", text_color="black", 
-        anchor="center", command=lambda : self.database.create_contact(name, 
-        number)).pack(padx=10, pady=4)
+        anchor="center", 
+        command=lambda : self.database.create_contact(name, number)).pack(padx=10, pady=4)
+    def update_contact(self):
+    	window = tk.Toplevel()
+    	window.geometry("300x160")
+    	window.update()
+    	self.center_window(window, 300, 160)
+    	window.resizable(0, 0)
+    	window.title("Update Contact")
+    	
+    	self.style.configure("Indications.TLabel", background="white",
+    	foreground="black", borderwidth=2, relief="solid", 
+    	anchor="center", padding=5)
+    	
+    	indication1 = ttk.Label(window, text="Select A Contact ->", 
+    	style="Indications.TLabel", width=18).place(x=7, y=7)
 if __name__ == ("__main__"):
     app = App()
     app.mainloop()
