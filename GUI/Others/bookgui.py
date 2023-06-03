@@ -24,35 +24,45 @@ class Database:
             number TEXT (15)
         )""")
     def get_contacts(self):
-    	conn = connect("contacts.db")
-    	cursor = conn.cursor()
-    	cursor.execute("""SELECT *
-    	FROM PEOPLE""")
-    	return cursor.fetchall()
-    	conn.commit()
-    	conn.close()
+        conn = connect("contacts.db")
+        cursor = conn.cursor()
+        cursor.execute("""SELECT *
+        FROM PEOPLE""")
+        return cursor.fetchall()
+        conn.commit()
+        conn.close()
 
     def create_contact(self, name, number):
         error = lambda : showerror(title="Error", message="You Must Provide The Number")
-        if not number.get():
-            error()
-        counter = 0
-        chars = ascii_lowercase + ascii_uppercase
-        for char in number.get():
-        	if char in chars:
-        		counter += 1
-        if counter >= 1:
-        	error()
-        else:    
-            conn = connect("contacts.db")
-            cursor = conn.cursor()
-            instruction = (f"""INSERT INTO PEOPLE (name, number)
-                               VALUES (\"{name.get()}\", \"{number.get()}\")""")
-            cursor.execute(instruction)
-            conn.commit()
-            conn.close()
-
-            showinfo(title="Succes", message="Contact Succesfully Created")
+        while True:
+            if not number.get():
+                error()
+                break
+            chars = ascii_lowercase + ascii_uppercase
+            checks = 0
+            for char in number.get():
+                if char in chars:
+                    checks += 1
+            if checks >= 1:
+                error()
+                break
+            else:
+                conn = connect("contacts.db")
+                cursor = conn.cursor()
+                instruction = (f"""INSERT INTO PEOPLE (name, number)
+                VALUES (\"{name.get()}\", \"{number.get()}\")""")
+                cursor.execute(instruction)
+                conn.commit()
+                conn.close()
+                showinfo(title="Success", message="Contact Succesfully Created")
+#                break
+#                self.show_contacts()
+                break
+    def update_contact(self):
+        pass
+    def update_contact_callback(self, event=None):
+#        showinfo(message="Success")
+        pass
 class App(tk.Tk):
     def __init__(self):
         self.database = Database()
@@ -87,6 +97,7 @@ class App(tk.Tk):
         self.config(menu=self.menu_bar)
 
         self.style = ttk.Style()
+        self.style.theme_use("clam")
         self.style.configure("Section.TFrame", background="red",
         borderwidth=2, relief="solid", width=80, height=346)
         self.section_buttons = ttk.Frame(self, 
@@ -136,18 +147,18 @@ class App(tk.Tk):
         self.config(bg=color[1])
         
     def show_contacts(self):
-    	contacts = self.database.get_contacts()
-    	style = ttk.Style()
-    	self.style.configure("Items.TLabel", background="white",
-    	foreground="black", borderwidth=2, relief="solid",
-    	padding=6)
-    	if contacts:
-    		y = 2
-    		for i in contacts:
-    		    show = ttk.Label(self, text=f"ID : {i[0]} | Name : {i[1]} | Number : {i[2]}",
-    			style="Items.TLabel", width=46).place(x=96, y=y)
-    		    y += 40
-    		    
+        contacts = self.database.get_contacts()
+        style = ttk.Style()
+        self.style.configure("Items.TLabel", background="white",
+        foreground="black", borderwidth=2, relief="solid",
+        padding=6)
+        if contacts:
+            y = 2
+            for i in contacts:
+                show = ttk.Label(self, text=f"ID : {i[0]} | Name : {i[1]} | Number : {i[2]}",
+                style="Items.TLabel", width=46).place(x=96, y=y)
+                y += 40
+                
     def add_contact(self):
         window = tk.Toplevel()
         window.geometry("300x160")
@@ -183,19 +194,39 @@ class App(tk.Tk):
         anchor="center", 
         command=lambda : self.database.create_contact(name, number)).pack(padx=10, pady=4)
     def update_contact(self):
-    	window = tk.Toplevel()
-    	window.geometry("300x160")
-    	window.update()
-    	self.center_window(window, 300, 160)
-    	window.resizable(0, 0)
-    	window.title("Update Contact")
-    	
-    	self.style.configure("Indications.TLabel", background="white",
-    	foreground="black", borderwidth=2, relief="solid", 
-    	anchor="center", padding=5)
-    	
-    	indication1 = ttk.Label(window, text="Select A Contact ->", 
-    	style="Indications.TLabel", width=18).place(x=7, y=7)
-if __name__ == ("__main__"):
+        window = tk.Toplevel()
+        window.geometry("330x160")
+        window.update()
+        self.center_window(window, 330, 160)
+        window.resizable(0, 0)
+        window.title("Update Contact")
+        
+        self.style.configure("Indications.TLabel", background="white",
+        foreground="black", borderwidth=2, relief="solid", 
+        anchor="center", padding=5)
+        
+        indication1 = ttk.Label(window, text="Select A Contact ->", 
+        style="Indications.TLabel", width=18).place(x=7, y=7)
+        contacts = [i[:2] for i in self.database.get_contacts()]
+        contacts = [f"{str(x)} - {str(y)}" for x, y in contacts]
+        self.style.configure("MenuContacts.TCombobox", background="white", 
+        foreground="red", padding=5, arrowsize=20)
+        self.contacts_menu = ttk.Combobox(window,  state="readonly", 
+        values=contacts, justify="left", style="MenuContacts.TCombobox",
+        width=15)
+        if contacts:
+            self.contacts_menu.current(0)
+        if not contacts:
+            self.contacts_menu.set("No Contact")
+        self.contacts_menu.place(x=170, y=7)
+        self.contacts_menu.bind("<<ComboboxSelected>>",
+        self.database.update_contact_callback)
+
+        self.entry_name = CTkEntry(window, width=160, height=30,
+        corner_radius=10, fg_color="white", text_color="black",
+        placeholder_text_color="gray", placeholder_text="NAME",
+        font=("Hack", 12), justify="center")
+        self.entry_name.place(x=7, y=45)
+if __name__ == "__main__":
     app = App()
     app.mainloop()
