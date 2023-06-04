@@ -7,6 +7,7 @@ from sqlite3 import connect
 from PIL import ImageTk, Image
 from customtkinter import CTkEntry, CTkButton, CTkComboBox
 from string import ascii_uppercase, ascii_lowercase
+from re import findall
 
 class Database:
     def __init__(self):
@@ -55,14 +56,16 @@ class Database:
                 conn.commit()
                 conn.close()
                 showinfo(title="Success", message="Contact Succesfully Created")
-#                break
-#                self.show_contacts()
                 break
-    def update_contact(self):
-        pass
-    def update_contact_callback(self, event=None):
-#        showinfo(message="Success")
-        pass
+    def update_contact(self, event=None):
+        contacts = self.get_contacts()
+        contact_selected = int(findall(r"(\d)\s+-\s+.*", app.contacts_menu.get())[0])
+        app.entry_name.delete(0, "end")
+        app.entry_number.delete(0, "end")
+        for c in contacts:
+           if c[0] == contact_selected:
+                app.entry_name.insert(0, c[1])
+                app.entry_number.insert(0, c[2])
 class App(tk.Tk):
     def __init__(self):
         self.database = Database()
@@ -195,9 +198,9 @@ class App(tk.Tk):
         command=lambda : self.database.create_contact(name, number)).pack(padx=10, pady=4)
     def update_contact(self):
         window = tk.Toplevel()
-        window.geometry("330x160")
+        window.geometry("320x170")
         window.update()
-        self.center_window(window, 330, 160)
+        self.center_window(window, 320, 170)
         window.resizable(0, 0)
         window.title("Update Contact")
         
@@ -207,26 +210,48 @@ class App(tk.Tk):
         
         indication1 = ttk.Label(window, text="Select A Contact ->", 
         style="Indications.TLabel", width=18).place(x=7, y=7)
+
+        self.combobox_option = tk.StringVar()
+        
         contacts = [i[:2] for i in self.database.get_contacts()]
         contacts = [f"{str(x)} - {str(y)}" for x, y in contacts]
         self.style.configure("MenuContacts.TCombobox", background="white", 
-        foreground="red", padding=5, arrowsize=20)
+        foreground="black", padding=5, arrowsize=20)
         self.contacts_menu = ttk.Combobox(window,  state="readonly", 
         values=contacts, justify="left", style="MenuContacts.TCombobox",
-        width=15)
+        width=14)
         if contacts:
             self.contacts_menu.current(0)
         if not contacts:
             self.contacts_menu.set("No Contact")
         self.contacts_menu.place(x=170, y=7)
         self.contacts_menu.bind("<<ComboboxSelected>>",
-        self.database.update_contact_callback)
+        self.database.update_contact)
 
-        self.entry_name = CTkEntry(window, width=160, height=30,
+        self.entry_name = CTkEntry(window, width=190, height=30,
         corner_radius=10, fg_color="white", text_color="black",
         placeholder_text_color="gray", placeholder_text="NAME",
         font=("Hack", 12), justify="center")
         self.entry_name.place(x=7, y=45)
+
+        # self.entry_id = CTkEntry(window, width=100, height=30,
+        # corner_radius=10, fg_color="white", text_color="black",
+        # placeholder_text_color="gray", placeholder_text="ID",
+        # font=("Hack", 12), justify="center")
+        # self.entry_id.place(x=210, y=45)
+        
+        self.entry_number = CTkEntry(window, width=180, height=30,
+        corner_radius=10, fg_color="white", text_color="black",
+        placeholder_text_color="gray", placeholder_text="NUMBER",
+        font=("Hack", 12), justify="center")
+        self.entry_number.place(x=70, y=80)
+
+        update = CTkButton(window, width=180, height=40, 
+        corner_radius=5, border_width=2, border_spacing=2,
+        fg_color="#98F394", hover_color="#0bF000", border_color="red", text_color="black",
+        text="Update", font=("Verdana", 10), state="normal", 
+        command=self.database.update_contact, anchor="center")
+        update.place(x=70, y=115)
 if __name__ == "__main__":
     app = App()
     app.mainloop()
