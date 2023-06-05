@@ -57,7 +57,7 @@ class Database:
                 conn.close()
                 showinfo(title="Success", message="Contact Succesfully Created")
                 break
-    def update_contact(self, event=None):
+    def callback(self, event=None):
         contacts = self.get_contacts()
         contact_selected = int(findall(r"(\d)\s+-\s+.*", app.contacts_menu.get())[0])
         app.entry_name.delete(0, "end")
@@ -66,6 +66,18 @@ class Database:
            if c[0] == contact_selected:
                 app.entry_name.insert(0, c[1])
                 app.entry_number.insert(0, c[2])
+    def update_contact(self):
+        contact_selected = int(findall(r"(\d)\s+-\s+.*", app.contacts_menu.get())[0])
+        name = app.entry_name.get()
+        number = app.entry_number.get()
+        print(name, number)
+        instruction = (f"""UPDATE PEOPLE SET name=\"{app.entry_name.get()}\",
+        number={app.entry_number.get()} WHERE id={int(contact_selected)}""")
+        conn = connect("contacts.db")
+        cursor = conn.cursor()
+        cursor.execute(instruction)
+        conn.commit()
+        conn.close()
 class App(tk.Tk):
     def __init__(self):
         self.database = Database()
@@ -226,7 +238,7 @@ class App(tk.Tk):
             self.contacts_menu.set("No Contact")
         self.contacts_menu.place(x=170, y=7)
         self.contacts_menu.bind("<<ComboboxSelected>>",
-        self.database.update_contact)
+        self.database.callback)
 
         self.entry_name = CTkEntry(window, width=190, height=30,
         corner_radius=10, fg_color="white", text_color="black",
