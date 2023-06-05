@@ -6,7 +6,7 @@ from tkinter.messagebox import showinfo, showerror
 from sqlite3 import connect
 from PIL import ImageTk, Image
 from customtkinter import CTkEntry, CTkButton, CTkComboBox
-from string import ascii_uppercase, ascii_lowercase
+from string import ascii_uppercase, ascii_lowercase, punctuation
 from re import findall
 
 class Database:
@@ -39,7 +39,7 @@ class Database:
             if not number.get():
                 error()
                 break
-            chars = ascii_lowercase + ascii_uppercase
+            chars = ascii_lowercase + ascii_uppercase + punctuation
             checks = 0
             for char in number.get():
                 if char in chars:
@@ -57,6 +57,7 @@ class Database:
                 conn.close()
                 showinfo(title="Success", message="Contact Succesfully Created")
                 break
+        app.show_contacts()
     def callback(self, event=None):
         contacts = self.get_contacts()
         contact_selected = int(findall(r"(\d)\s+-\s+.*", app.contacts_menu.get())[0])
@@ -67,17 +68,33 @@ class Database:
                 app.entry_name.insert(0, c[1])
                 app.entry_number.insert(0, c[2])
     def update_contact(self):
-        contact_selected = int(findall(r"(\d)\s+-\s+.*", app.contacts_menu.get())[0])
-        name = app.entry_name.get()
-        number = app.entry_number.get()
-        print(name, number)
-        instruction = (f"""UPDATE PEOPLE SET name=\"{app.entry_name.get()}\",
-        number={app.entry_number.get()} WHERE id={int(contact_selected)}""")
-        conn = connect("contacts.db")
-        cursor = conn.cursor()
-        cursor.execute(instruction)
-        conn.commit()
-        conn.close()
+        while True:
+            contact_selected = int(findall(r"(\d)\s+-\s+.*", app.contacts_menu.get())[0])
+            name = app.entry_name.get()
+            number = app.entry_number.get()
+            error = lambda : showerror(title="Error", message="You Must Provide The Number")
+            chars = ascii_lowercase + ascii_uppercase + punctuation
+            checks = 0
+            if not app.entry_number.get():
+                error()
+                break
+            for char in number:
+                if char in chars:
+                    checks += 1
+            if checks >= 1:
+                error()
+                break
+            else:
+                instruction = (f"""UPDATE PEOPLE SET name=\"{app.entry_name.get()}\",
+                number={app.entry_number.get()} WHERE id={int(contact_selected)}""")
+                conn = connect("contacts.db")
+                cursor = conn.cursor()
+                cursor.execute(instruction)
+                conn.commit()
+                conn.close()
+                showinfo(title="Success", message="The Contact Has Been Successfully Updated")
+                break
+        app.show_contacts()
 class App(tk.Tk):
     def __init__(self):
         self.database = Database()
@@ -85,10 +102,10 @@ class App(tk.Tk):
             self.database.create_database()
             self.database.create_table()
         super().__init__()
-        self.geometry("500x400")
+        self.geometry("500x264")
         self.title("Contact Book")
         self.update()
-        self.center_window(self, 500, 400)
+        self.center_window(self, 500, 264)
         self.resizable(0, 0)
 
         self.config(bg="white", bd=0)
@@ -117,7 +134,7 @@ class App(tk.Tk):
         borderwidth=2, relief="solid", width=80, height=346)
         self.section_buttons = ttk.Frame(self, 
         style="Section.TFrame", width=90, 
-        height=395).place(x=2, y=2)
+        height=260).place(x=2, y=2)
 
         self.style.configure("Add.TButton", background="white",
         borderwidth=2, relief="solid", padding=2)
