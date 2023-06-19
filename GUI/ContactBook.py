@@ -46,7 +46,7 @@ class Database:
             chars = ascii_lowercase + ascii_uppercase + punctuation
             checks = 0
             for char in number.get():
-                if char in chars:
+                if char in chars.replace("+", ""):
                     checks += 1
             if checks >= 1:
                 error()
