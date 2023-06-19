@@ -72,17 +72,31 @@ class App(CTk):
         window.config(menu=menu_bar)
 
         self.save_image = ImageTk.PhotoImage(Image.open(join(self.img_folder, "diskette_save.png")).resize((50, 50)))
-        CTkButton(window, width=60, height=60, corner_radius=10, border_width=2, border_spacing=0,
+        CTkButton(window, width=60, height=60, corner_radius=0, border_width=2,
                   fg_color="#ffffff", hover_color="#bcbcbc", border_color="#000000",
                   text="", text_color_disabled="#ffffff", image=self.save_image,
                   compound="right").place(x=5, y=5)
         
         self.delete_table_img = ImageTk.PhotoImage(Image.open(join(self.img_folder, "broken_table.png")).resize((60, 50)))
         self.save_image = ImageTk.PhotoImage(Image.open(join(self.img_folder, "diskette_save.png")).resize((50, 50)))
-        CTkButton(window, width=60, height=60, corner_radius=10, border_width=2, border_spacing=0,
+        CTkButton(window, width=60, height=60, corner_radius=0, border_width=2,
         fg_color="#ffffff", hover_color="#bcbcbc", border_color="#000000",
         text="", text_color_disabled="#ffffff", image=self.delete_table_img,
-        compound="right").place(x=80, y=5)
+        compound="right").place(x=75, y=5)
+
+        self.add_column_img = ImageTk.PhotoImage(Image.open(join(self.img_folder, "add_column.png")).resize((45, 50)))
+        self.save_image = ImageTk.PhotoImage(Image.open(join(self.img_folder, "diskette_save.png")).resize((50, 50)))
+        CTkButton(window, width=60, height=60, corner_radius=0, border_width=2,
+        fg_color="#ffffff", hover_color="#bcbcbc", border_color="#000000",
+        text="", text_color_disabled="#ffffff", image=self.add_column_img,
+        compound="right").place(x=152, y=5)
+
+        self.delete_column_img = ImageTk.PhotoImage(Image.open(join(self.img_folder, "delete_column.png")).resize((50, 50)))
+        self.save_image = ImageTk.PhotoImage(Image.open(join(self.img_folder, "diskette_save.png")).resize((50, 50)))
+        CTkButton(window, width=60, height=60, corner_radius=0, border_width=2,
+        fg_color="#ffffff", hover_color="#bcbcbc", border_color="#000000",
+        text="", text_color_disabled="#ffffff", image=self.delete_column_img,
+        compound="right").place(x=220, y=5)
 if __name__ == "__main__":
     app = App()
     app.mainloop()
