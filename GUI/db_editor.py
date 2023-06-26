@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 from customtkinter import (CTk, CTkLabel, 
                            CTkButton, CTkToplevel, 
                            CTkImage)
@@ -6,9 +7,17 @@ from tkinter.colorchooser import askcolor
 from tkinter.messagebox import showinfo
 from os.path import join, dirname
 from PIL import ImageTk, Image
+
+class Database:
+    def __init__(self):
+        pass
+    def show_selection(self):
+        text = app.treeview.item(app.my_id, option="text")
+        showinfo(message=text)
 class App(CTk):
     def __init__(self):
         super().__init__()
+        self.database = Database()
         self.img_folder = join(dirname(__file__), "img")
         self.title("Database Editor")
         self.geometry("300x170")
@@ -78,25 +87,35 @@ class App(CTk):
                   compound="right").place(x=5, y=5)
         
         self.delete_table_img = ImageTk.PhotoImage(Image.open(join(self.img_folder, "broken_table.png")).resize((60, 50)))
-        self.save_image = ImageTk.PhotoImage(Image.open(join(self.img_folder, "diskette_save.png")).resize((50, 50)))
         CTkButton(window, width=60, height=60, corner_radius=0, border_width=2,
         fg_color="#ffffff", hover_color="#bcbcbc", border_color="#000000",
         text="", text_color_disabled="#ffffff", image=self.delete_table_img,
         compound="right").place(x=75, y=5)
 
         self.add_column_img = ImageTk.PhotoImage(Image.open(join(self.img_folder, "add_column.png")).resize((45, 50)))
-        self.save_image = ImageTk.PhotoImage(Image.open(join(self.img_folder, "diskette_save.png")).resize((50, 50)))
         CTkButton(window, width=60, height=60, corner_radius=0, border_width=2,
         fg_color="#ffffff", hover_color="#bcbcbc", border_color="#000000",
         text="", text_color_disabled="#ffffff", image=self.add_column_img,
         compound="right").place(x=152, y=5)
 
         self.delete_column_img = ImageTk.PhotoImage(Image.open(join(self.img_folder, "delete_column.png")).resize((50, 50)))
-        self.save_image = ImageTk.PhotoImage(Image.open(join(self.img_folder, "diskette_save.png")).resize((50, 50)))
         CTkButton(window, width=60, height=60, corner_radius=0, border_width=2,
         fg_color="#ffffff", hover_color="#bcbcbc", border_color="#000000",
         text="", text_color_disabled="#ffffff", image=self.delete_column_img,
         compound="right").place(x=220, y=5)
+
+        self.treeview = ttk.Treeview(window, cursor="hand2")
+        # self.treeview = ttk.Treeview(window, cursor="hand2", columns=("#1", "#2"))
+        self.treeview.heading("#0", text="Column1")
+        self.treeview.pack(anchor="center")
+        # self.treeview.insert("", tk.END, text="README.md", values=("subproof1", "subproof2"))
+        # self.my_id = "id_unico"
+        # self.item1 = self.treeview.insert("", tk.END, text="Element 1", iid=self.my_id)
+        # self.item2 = self.treeview.insert("", tk.END, text="Element2")
+        # self.treeview.pack(padx=10, pady=60)
+
+    def create_column(self):
+        self.treeview.insert("", tk.END, "prof")
 if __name__ == "__main__":
     app = App()
     app.mainloop()
