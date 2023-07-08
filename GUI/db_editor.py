@@ -4,9 +4,12 @@ from customtkinter import (CTk, CTkLabel,
                            CTkButton, CTkToplevel, 
                            CTkImage)
 from tkinter.colorchooser import askcolor
-from tkinter.messagebox import showinfo
+from tkinter.simpledialog import askstring
+from tkinter.messagebox import (showinfo,
+                                showerror)
 from os.path import join, dirname
 from PIL import ImageTk, Image
+from string import punctuation
 
 class Database:
     def __init__(self):
@@ -56,6 +59,7 @@ class App(CTk):
     def create_database(self):
         self.withdraw()
         window = CTkToplevel(fg_color="#444444")
+        window.resizable(0, 0)
         window.title("Create Database")
         window.attributes("-zoomed", True)
         window.protocol("WM_DELETE_WINDOW", self.quit)
@@ -96,7 +100,7 @@ class App(CTk):
         CTkButton(window, width=60, height=60, corner_radius=0, border_width=2,
         fg_color="#ffffff", hover_color="#bcbcbc", border_color="#000000",
         text="", text_color_disabled="#ffffff", image=self.add_column_img,
-        compound="right").place(x=152, y=5)
+        compound="right", command=self.create_column).place(x=152, y=5)
 
         self.delete_column_img = ImageTk.PhotoImage(Image.open(join(self.img_folder, "delete_column.png")).resize((50, 50)))
         CTkButton(window, width=60, height=60, corner_radius=0, border_width=2,
@@ -105,8 +109,8 @@ class App(CTk):
         compound="right").place(x=220, y=5)
 
         self.treeview = ttk.Treeview(window, cursor="hand2")
-        # self.treeview = ttk.Treeview(window, cursor="hand2", columns=("#1", "#2"))
-        self.treeview.heading("#0", text="Column1")
+        self.treeview["show"] = "tree headings"
+        # showinfo(message=self.treeview["show"])
         self.treeview.pack(anchor="center")
         # self.treeview.insert("", tk.END, text="README.md", values=("subproof1", "subproof2"))
         # self.my_id = "id_unico"
@@ -114,8 +118,37 @@ class App(CTk):
         # self.item2 = self.treeview.insert("", tk.END, text="Element2")
         # self.treeview.pack(padx=10, pady=60)
 
+    # def create_column(self):
+    #     self.not_repeat = False
+    #     while not self.not_repeat:
+    #         columns = askstring(title="Columns", prompt="Enter the columns separated by a space").split()
+    #         for i in columns:
+    #             if i in punctuation:
+    #             # for x in i:
+    #             #     if x in punctuation:
+    #                 showerror(title="Error", message="If you are going to write several column names, separate them with spaces only.")
+    #                 self.not_repeat = True
+    #                 break
     def create_column(self):
-        self.treeview.insert("", tk.END, "prof")
+        self.not_repeat = False
+        while not self.not_repeat:
+            columns = askstring(title="Columns", prompt="Enter the columns separated by a space")
+            if columns is None:
+                # El diálogo fue cerrado sin ingresar ningún valor
+                return
+
+            column_names = columns.split()
+            for name in column_names:
+                if any(char in punctuation for char in name):
+                    showerror(title="Error", message="Please only use spaces to separate column names.")
+                    self.not_repeat = True
+                    break
+            else:
+                # No se encontraron signos de puntuación en los nombres de columna
+                self.not_repeat = True
+                # Continuar con el resto de la lógica para agregar las columnas al Treeview
+
+                print(column_names)
 if __name__ == "__main__":
     app = App()
     app.mainloop()
