@@ -2,7 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 from customtkinter import (CTk, CTkLabel, 
                            CTkButton, CTkToplevel, 
-                           CTkImage)
+                           CTkImage,
+                           CTkScrollbar)
 from tkinter.colorchooser import askcolor
 from tkinter.simpledialog import askstring
 from tkinter.messagebox import (showinfo,
@@ -58,11 +59,11 @@ class App(CTk):
         window.config(background=color)
     def create_database(self):
         self.withdraw()
-        window = CTkToplevel(fg_color="#444444")
-        window.resizable(0, 0)
-        window.title("Create Database")
-        window.attributes("-zoomed", True)
-        window.protocol("WM_DELETE_WINDOW", self.quit)
+        self.window = CTkToplevel(fg_color="#444444")
+        # self.window.resizable(0, 0)
+        self.window.title("Create Database")
+        self.window.attributes("-zoomed", True)
+        self.window.protocol("WM_DELETE_WINDOW", self.quit)
 
         menu_bar = tk.Menu(activebackground="#d0e0e3",
                            activeborderwidth=0,
@@ -75,60 +76,43 @@ class App(CTk):
 
         self.color_img = ImageTk.PhotoImage(Image.open(join(self.img_folder, "color.png")))
         edit_menu.add_command(label="Color", accelerator="Ctrl+C",
-                              command=lambda: self.change_color(window),
+                              command=lambda: self.change_color(self.window),
                               image=self.color_img,
                               compound=tk.LEFT)
-        window.bind_all(sequence="<Control-c>", func=lambda event: self.change_color(window))
+        self.window.bind_all(sequence="<Control-c>", func=lambda event: self.change_color(self.window))
 
         menu_bar.add_cascade(menu=edit_menu, label="Edit")
 
-        window.config(menu=menu_bar)
+        self.window.config(menu=menu_bar)
 
         self.save_image = ImageTk.PhotoImage(Image.open(join(self.img_folder, "diskette_save.png")).resize((50, 50)))
-        CTkButton(window, width=60, height=60, corner_radius=0, border_width=2,
+        CTkButton(self.window, width=60, height=60, corner_radius=0, border_width=2,
                   fg_color="#ffffff", hover_color="#bcbcbc", border_color="#000000",
                   text="", text_color_disabled="#ffffff", image=self.save_image,
                   compound="right").place(x=5, y=5)
         
         self.delete_table_img = ImageTk.PhotoImage(Image.open(join(self.img_folder, "broken_table.png")).resize((60, 50)))
-        CTkButton(window, width=60, height=60, corner_radius=0, border_width=2,
+        CTkButton(self.window, width=60, height=60, corner_radius=0, border_width=2,
         fg_color="#ffffff", hover_color="#bcbcbc", border_color="#000000",
         text="", text_color_disabled="#ffffff", image=self.delete_table_img,
         compound="right").place(x=75, y=5)
 
         self.add_column_img = ImageTk.PhotoImage(Image.open(join(self.img_folder, "add_column.png")).resize((45, 50)))
-        CTkButton(window, width=60, height=60, corner_radius=0, border_width=2,
+        CTkButton(self.window, width=60, height=60, corner_radius=0, border_width=2,
         fg_color="#ffffff", hover_color="#bcbcbc", border_color="#000000",
         text="", text_color_disabled="#ffffff", image=self.add_column_img,
         compound="right", command=self.create_column).place(x=152, y=5)
 
         self.delete_column_img = ImageTk.PhotoImage(Image.open(join(self.img_folder, "delete_column.png")).resize((50, 50)))
-        CTkButton(window, width=60, height=60, corner_radius=0, border_width=2,
+        CTkButton(self.window, width=60, height=60, corner_radius=0, border_width=2,
         fg_color="#ffffff", hover_color="#bcbcbc", border_color="#000000",
         text="", text_color_disabled="#ffffff", image=self.delete_column_img,
         compound="right").place(x=220, y=5)
 
-        self.treeview = ttk.Treeview(window, cursor="hand2")
-        self.treeview["show"] = "tree headings"
-        # showinfo(message=self.treeview["show"])
-        self.treeview.pack(anchor="center")
-        # self.treeview.insert("", tk.END, text="README.md", values=("subproof1", "subproof2"))
-        # self.my_id = "id_unico"
-        # self.item1 = self.treeview.insert("", tk.END, text="Element 1", iid=self.my_id)
-        # self.item2 = self.treeview.insert("", tk.END, text="Element2")
-        # self.treeview.pack(padx=10, pady=60)
+        self.treeview = ttk.Treeview(self.window, cursor="hand2", selectmode="browse")
+        self.treeview["show"] = "headings"
+        self.treeview.pack(anchor="w", padx=5, pady=80)
 
-    # def create_column(self):
-    #     self.not_repeat = False
-    #     while not self.not_repeat:
-    #         columns = askstring(title="Columns", prompt="Enter the columns separated by a space").split()
-    #         for i in columns:
-    #             if i in punctuation:
-    #             # for x in i:
-    #             #     if x in punctuation:
-    #                 showerror(title="Error", message="If you are going to write several column names, separate them with spaces only.")
-    #                 self.not_repeat = True
-    #                 break
     def create_column(self):
         self.not_repeat = False
         while not self.not_repeat:
@@ -147,8 +131,28 @@ class App(CTk):
                 # No se encontraron signos de puntuación en los nombres de columna
                 self.not_repeat = True
                 # Continuar con el resto de la lógica para agregar las columnas al Treeview
+                self.treeview["columns"] = column_names
+                self.treeview["show"] = "headings"
+                # print(self.treeview["show"])
+                # for column_name in column_names:
+                #     self.treeview.heading(column_name, text=column_name)
 
-                print(column_names)
+                # MODIFICACION DE PRUEBA
+                
+                # for i in column_names:
+                #     self.treeview.column(f"{i}", width=100, minwidth=0, stretch=False)
+                #     self.treeview.heading(f"{i}", text=i)
+                
+                self.scrollbar = ttk.Scrollbar(self.window, orient="horizontal", command=self.treeview.xview)
+                self.treeview.configure(xscrollcommand=self.scrollbar.set)
+                self.scrollbar.pack(side="bottom", fill="x")
+                for i in column_names:
+                    self.treeview.column(i, width=200, minwidth=200, stretch=False)
+                    self.window.update()
+                    self.treeview.heading(i, text=i)
+                # MODIFICACION DE PRUEBA
+
+                self.window.update()
 if __name__ == "__main__":
     app = App()
     app.mainloop()
