@@ -2,8 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from customtkinter import (CTk, CTkLabel, 
                            CTkButton, CTkToplevel, 
-                           CTkImage,
-                           CTkScrollbar)
+                           CTkImage)
 from tkinter.colorchooser import askcolor
 from tkinter.simpledialog import askstring
 from tkinter.messagebox import (showinfo,
@@ -57,13 +56,18 @@ class App(CTk):
         color = askcolor(initialcolor="#da5d5d",
                          title="Background Color")[1]
         window.config(background=color)
+    def quit_app(self):
+        self.destroy()
     def create_database(self):
         self.withdraw()
         self.window = CTkToplevel(fg_color="#444444")
-        # self.window.resizable(0, 0)
+        self.window.geometry(f"600x500")
+        self.window.update()
+        self.center_window(self.window, 600, 500)
+        self.window.resizable(0, 0)
         self.window.title("Create Database")
-        self.window.attributes("-zoomed", True)
-        self.window.protocol("WM_DELETE_WINDOW", self.quit)
+        self.window.protocol("WM_DELETE_WINDOW", self.quit_app)
+        self.window.update()
 
         menu_bar = tk.Menu(activebackground="#d0e0e3",
                            activeborderwidth=0,
@@ -110,7 +114,7 @@ class App(CTk):
         compound="right").place(x=220, y=5)
 
         self.treeview = ttk.Treeview(self.window, cursor="hand2", selectmode="browse")
-        self.treeview["show"] = "headings"
+        self.treeview["show"] = "tree headings"
         self.treeview.pack(anchor="w", padx=5, pady=80)
 
     def create_column(self):
@@ -118,7 +122,6 @@ class App(CTk):
         while not self.not_repeat:
             columns = askstring(title="Columns", prompt="Enter the columns separated by a space")
             if columns is None:
-                # El diálogo fue cerrado sin ingresar ningún valor
                 return
 
             column_names = columns.split()
@@ -128,24 +131,17 @@ class App(CTk):
                     self.not_repeat = True
                     break
             else:
-                # No se encontraron signos de puntuación en los nombres de columna
                 self.not_repeat = True
-                # Continuar con el resto de la lógica para agregar las columnas al Treeview
                 self.treeview["columns"] = column_names
                 self.treeview["show"] = "headings"
-                # print(self.treeview["show"])
-                # for column_name in column_names:
-                #     self.treeview.heading(column_name, text=column_name)
+                self.window.update()
 
                 # MODIFICACION DE PRUEBA
-                
-                # for i in column_names:
-                #     self.treeview.column(f"{i}", width=100, minwidth=0, stretch=False)
-                #     self.treeview.heading(f"{i}", text=i)
-                
                 self.scrollbar = ttk.Scrollbar(self.window, orient="horizontal", command=self.treeview.xview)
+                self.window.update()
+                x = self.window.winfo_width()
+                self.scrollbar.place(x=5, y=290, height=10, width=x-10)
                 self.treeview.configure(xscrollcommand=self.scrollbar.set)
-                self.scrollbar.pack(side="bottom", fill="x")
                 for i in column_names:
                     self.treeview.column(i, width=200, minwidth=200, stretch=False)
                     self.window.update()
@@ -153,6 +149,10 @@ class App(CTk):
                 # MODIFICACION DE PRUEBA
 
                 self.window.update()
+                showinfo(title="Success", message="""You have already created the columns 
+of your table, to insert records you must 
+save the database and then edit it in the 
+\"Edit database\" window""")
 if __name__ == "__main__":
     app = App()
     app.mainloop()
