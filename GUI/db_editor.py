@@ -148,6 +148,9 @@ class App(CTk):
     def create_database(self):
         self.withdraw()
         self.window = CTkToplevel(fg_color="#444444")
+        self.window.wm_iconbitmap()
+        self.icon = ImageTk.PhotoImage(file=join(self.img_folder, "icon1.png"))
+        self.window.iconphoto(False, self.icon)
         self.window.geometry(f"494x500+50+100")
         self.window.update()
         self.window.resizable(0, 0)
