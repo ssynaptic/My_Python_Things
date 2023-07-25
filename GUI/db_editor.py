@@ -47,22 +47,18 @@ class App(CTk):
         self.database = Database()
         self.img_folder = join(dirname(__file__), "img")
         self.title("Database Editor")
-        self.geometry("300x170")
+        # self.create_database()
+        self.geometry("300x20")
         self.resizable(0, 0)
         self.configure(fg_color="#2f2f2f")
 
-        CTkButton(self, width=200, height=40, corner_radius=10,
+        CTkButton(self, width=250, height=40, corner_radius=10,
                   border_width=2, border_spacing=2, fg_color="#5b5b5b",
                   hover_color="#444444", border_color="#6aa84f",
                   text_color="#ffffff", text_color_disabled="#eeeeee",
-                  text="Create Database", font=("Fira Code Regular", 12),
-                  command=self.create_database).pack(pady=15)
-        CTkButton(self, width=200, height=40, corner_radius=10,
-                  border_width=2, border_spacing=2, fg_color="#5b5b5b",
-                  hover_color="#444444", border_color="#6aa84f",
-                  text_color="#ffffff", text_color_disabled="#eeeeee",
-                  text="Edit Database", font=("Fira Code Regular", 12)).pack(pady=20)
-        self.center_window(self, 300, 170)
+                  text="Create Or Edit Database", font=("Fira Code Regular", 12),
+                  command=self.main).pack(pady=26)
+        self.center_window(self, 300, 100)
 
     def center_window(self, window, width, height):
         window.update()
@@ -108,19 +104,19 @@ class App(CTk):
                 self.columns.update({name: type})
                 self.treeview["columns"] = list(self.columns.keys())
                 self.treeview["show"] = "headings"
-                self.window.update()
+                self.mainwindow.update()
 
                 self.scrollbar = ttk.Scrollbar(
-                    self.window, orient="horizontal", command=self.treeview.xview)
-                self.window.update()
-                x = self.window.winfo_width()
-                y = self.window.winfo_height()
+                    self.mainwindow, orient="horizontal", command=self.treeview.xview)
+                self.mainwindow.update()
+                x = self.mainwindow.winfo_width()
+                y = self.mainwindow.winfo_height()
                 self.scrollbar.place(x=5, y=y-14, height=12, width=x-10)
                 self.treeview.configure(xscrollcommand=self.scrollbar.set)
                 for i in self.columns:
                     self.treeview.column(
                         i, width=200, minwidth=200, stretch=False)
-                    self.window.update()
+                    self.mainwindow.update()
                     self.treeview.heading(i, text=i)
 
     def delete_column_table(self):
@@ -132,31 +128,31 @@ class App(CTk):
             del self.columns[key]
             self.treeview["columns"] = list(self.columns.keys())
             self.treeview["show"] = "headings"
-            self.window.update()
+            self.mainwindow.update()
 
     def destroy_table(self):
         self.treeview["columns"] = []
         self.treeview["show"] = "tree headings"
         self.columns.clear()
-        self.window.update()
+        self.mainwindow.update()
 
     def column_window_closed(self):
         self.column_window_open = False
         self.subwindow.destroy()
-        self.window.focus_set()
+        self.mainwindow.focus_set()
 
-    def create_database(self):
+    def main(self):
         self.withdraw()
-        self.window = CTkToplevel(fg_color="#444444")
-        self.window.wm_iconbitmap()
-        self.icon = ImageTk.PhotoImage(file=join(self.img_folder, "icon1.png"))
-        self.window.iconphoto(False, self.icon)
-        self.window.geometry(f"494x500+50+100")
-        self.window.update()
-        self.window.resizable(0, 0)
-        self.window.title("Create Database")
-        self.window.protocol("WM_DELETE_WINDOW", self.quit_app)
-        self.window.update()
+        self.mainwindow = CTkToplevel(fg_color="#444444")
+        # self.mainwindow.wm_iconbitmap()
+        # self.icon = ImageTk.PhotoImage(file=join(self.img_folder, "icon1.png"))
+        # self.mainwindow.iconphoto(False, self.icon)
+        self.mainwindow.geometry(f"494x500+50+100")
+        self.mainwindow.update()
+        self.mainwindow.resizable(0, 0)
+        self.mainwindow.title("Create Or Edit Database")
+        self.mainwindow.protocol("WM_DELETE_WINDOW", self.quit_app)
+        self.mainwindow.update()
 
         menu_bar = tk.Menu(activebackground="#d0e0e3",
                            activeborderwidth=0,
@@ -172,62 +168,63 @@ class App(CTk):
         self.table_name_img = ImageTk.PhotoImage(
             Image.open(join(self.img_folder, "db_name.png")))
         edit_menu.add_command(label="Color", accelerator="Ctrl+C",
-                              command=lambda: self.change_color(self.window),
+                              command=lambda: self.change_color(self.mainwindow),
                               image=self.color_img,
                               compound=tk.LEFT)
         edit_menu.add_command(label="Table Name", accelerator="Ctrl+N",
                               command=self.set_table_name,
                               image=self.table_name_img,
                               compound=tk.LEFT)
-        self.window.bind_all(sequence="<Control-c>",
-                             func=lambda event: self.change_color(self.window))
-        self.window.bind_all(sequence="<Control-n>",
+        self.mainwindow.bind_all(sequence="<Control-c>",
+                             func=lambda event: self.change_color(self.mainwindow))
+        self.mainwindow.bind_all(sequence="<Control-n>",
                              func=lambda event: self.set_table_name())
         menu_bar.add_cascade(menu=edit_menu, label="Edit")
 
-        self.window.config(menu=menu_bar)
+        self.mainwindow.config(menu=menu_bar)
 
         self.save_image = CTkImage(Image.open(
             join(self.img_folder, "diskette_save.png")), size=(50, 50))
-        CTkButton(self.window, width=60, height=60, corner_radius=0, border_width=2,
+        CTkButton(self.mainwindow, width=60, height=60, corner_radius=0, border_width=2,
                   fg_color="#ffffff", hover_color="#bcbcbc", border_color="#000000",
                   text="", text_color_disabled="#ffffff", image=self.save_image,
                   compound="right", command=self.save_db).place(x=5, y=5)
 
         self.delete_table_img = CTkImage(Image.open(
             join(self.img_folder, "broken_table.png")), size=(60, 50))
-        CTkButton(self.window, width=60, height=60, corner_radius=0, border_width=2,
+        CTkButton(self.mainwindow, width=60, height=60, corner_radius=0, border_width=2,
                   fg_color="#ffffff", hover_color="#bcbcbc", border_color="#000000",
                   text="", text_color_disabled="#ffffff", image=self.delete_table_img,
                   compound="right", command=self.destroy_table).place(x=75, y=5)
 
         self.add_column_img = CTkImage(Image.open(
             join(self.img_folder, "add_column.png")), size=(50, 50))
-        CTkButton(self.window, width=60, height=60, corner_radius=0, border_width=2,
+        CTkButton(self.mainwindow, width=60, height=60, corner_radius=0, border_width=2,
                   fg_color="#ffffff", hover_color="#bcbcbc", border_color="#000000",
                   text="", text_color_disabled="#ffffff", image=self.add_column_img,
                   compound="right", command=self.create_columns).place(x=152, y=5)
 
         self.delete_column_img = CTkImage(Image.open(
             join(self.img_folder, "delete_column.png")), size=(50, 50))
-        CTkButton(self.window, width=60, height=60, corner_radius=0, border_width=2,
+        CTkButton(self.mainwindow, width=60, height=60, corner_radius=0, border_width=2,
                   fg_color="#ffffff", hover_color="#bcbcbc", border_color="#000000",
                   text="", text_color_disabled="#ffffff", image=self.delete_column_img,
                   compound="right", command=self.delete_columns).place(x=220, y=5)
 
-        self.name_label = CTkLabel(self.window, width=200, height=50, corner_radius=5,
+        self.name_label = CTkLabel(self.mainwindow, width=200, height=50, corner_radius=5,
                                    fg_color="#ffffff", font=("Fira Code Semibold", 15), text_color="#000000",
                                    text_color_disabled="#ffffff", text=self.table_name, anchor="center")
         self.name_label.place(x=285, y=10)
 
-        self.treeview = ttk.Treeview(
-            self.window, cursor="hand2", selectmode="browse")
+        # self.style.configure("Treeview.Treeview")
+        self.treeview = ttk.Treeview(self.mainwindow, cursor="hand2", selectmode="browse", padding=6, height=500)
+        # self.treeview.configure(rowhe)
         self.treeview["show"] = "tree headings"
         self.treeview.pack(anchor="w", padx=5, pady=80)
 
         self.columns = {}
-        self.center_window(self.window, 490, 500)
-
+        self.center_window(self.mainwindow, 490, 320)
+        self.mainwindow.update()
     def create_columns(self):
         if self.column_window_open:
             showinfo(title="Information",
@@ -291,7 +288,7 @@ class App(CTk):
             else:
                 self.table_name = string
         self.name_label.configure(text=self.table_name)
-        self.window.update()
+        self.mainwindow.update()
 
     def save_db(self):
         self.db_name = askstring(title="DB Name", 
