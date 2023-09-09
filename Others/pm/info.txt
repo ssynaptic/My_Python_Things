@@ -1,0 +1,26 @@
+Objetivos:
+1- Programa basico para guardar contraseñas encriptadas
+con funciones basicas como: Crear registros, eliminar registros
+
+Por ahora solo eso, con el tiempo se iran agregando mas
+funciones
+
+Planificacion:
+
+1- Herramientas y bibliotecas: Para guardar los registros
+se usara el gestor base de datos SQLite con un metodo de
+cifrado para darle mas seguridad, las posibles bibliotecas
+para el cifrado son: pyqslitecipher, cryptography,
+pycryptodoome, pyAesCrypt
+
+2- Estructura Gemeral: Primero, una ventana para que el
+usuario ingrese la contraseña para desbloquear su base
+de datos, segundo, la ventana donde ya se muestren los
+registros de la base de datos ya desbloqueada
+
+Tecnologias a usar: CUrses, SQLite, Biblioteca de cifrado
+para SQLite
+
+Diseño:
+
+COMING SOON
