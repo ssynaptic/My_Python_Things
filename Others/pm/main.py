@@ -1,3 +1,6 @@
+# This is a password manager for terminal written in Python
+# VERSION: 1.0.0
+
 from argparse import ArgumentParser
 from database import Database
 from string import punctuation
@@ -5,7 +8,8 @@ from time import sleep
 from signal import (signal,
                     SIGINT,
                     SIGTSTP)
-
+from colorama import (init,
+                      Fore)
 class App:
     def __init__(self):
         signal(SIGINT, self.signal_handler)
@@ -19,22 +23,26 @@ class App:
             print("Welcome to the password manager")
             self.database.create_database(db_name=self.args.db_name[0])
             self.database.create_main_table(db_name=self.args.db_name[0])
-            print("[+] Passwords Database Created Successfully", end="\n\n")
-            # self.user_option = input("[?] Do you want to create a record? [Y/N] -> ").upper()
+            print(Fore.LIGHTGREEN_EX + "[+] Passwords Database Created Successfully", end="\n\n")
             while True:
                 try:
                     user_option = int(input("""1- Create Record
 2- Delete Record
-3- Read Records\n"""))
+3- Read Records
+4- Exit\n"""))
                     if user_option == 1:
                         self.get_record()
-                        break
+                        continue
                     if user_option == 2:
-                        pass
-                    if user_option == 3:
                         self.delete_record()
-                    else:
-                        break
+                        continue
+                    if user_option == 3:
+                        self.print_table()
+                        continue
+                    if user_option == 4:
+                        print(Fore.WHITE + "Exiting...")
+ #                   else:
+ #                       continue
                 except ValueError:
                     print("[!] The option must be a number not letter or punctuation symbol")
                     break
@@ -44,30 +52,41 @@ class App:
                     break
             exit(code=0)
         if check_db_results == "there_is_an_equal":
-            print("[!] There is an existing database with the same name, it will be opened...")
+            print(Fore.LIGHTYELLOW_EX + "[!] There is an existing database with the same name, it will be opened...")
             self.checking_table_results = self.database.check_db_integrity(db_name=self.args.db_name[0])
             if self.checking_table_results == "is_valid":
-                print("[+] The content of the database is not altered")
+                print(Fore.LIGHTGREEN_EX + "[+] The content of the database is not altered")
                 while True:
                     try:
                         user_option = int(input("""1- Create Record
 2- Delete Record
-3- Read Records\n"""))
+3- Read Records
+4- Exit\n"""))
                         if user_option == 1:
                             self.get_record()
+                            continue
                         if user_option == 2:
                             self.delete_record()
+                            continue
+                        if user_option == 3:
+                            self.read_records()
+                            continue
+                        if user_option == 4:
+                            print(Fore.WHITE + "Exiting...")
+                            # exit(code=0)
+                            break
+#                        else:
+#                            continue
                     except ValueError:
-                        print("[!] The option must be a number not letter or punctuation symbol")
-                        break
-                    except Exception as _:
-                        print("[!] An unexpected error has ocurred")
-                        #print(_)
-                        break
+                        print(Fore.RED + "[!] The option must be a number not letter or punctuation symbol")
+                        continue
+#                    except Exception as _:
+#                        print("[!] An unexpected error has ocurred")
+                        # print(_)
+#                        break
             else:
-                print("[-] The content of the database is altered")
-                answer = input("Do you want to delete that database? [Y/N]: ").upper()
-                #if answer == "Y":
+                print(Fore.LIGHTRED_EX + "[-] The content of the database is altered")
+                exit(code=1)
 
             exit(code=0)
 
@@ -78,28 +97,40 @@ class App:
     def get_record(self):
         user_username = str(input("Please enter your registry username: "))
         user_password = str(input("Please enter your registry password: "))
-        print("[+] Creating Record...")
+        print(Fore.LIGHTYELLOW_EX + "[+] Creating Record...")
         self.database.create_record(db_name=self.args.db_name[0],
                                     username=user_username,
                                     password=user_password)
-        print("[+] Record created successfully")
+        print(Fore.LIGHTGREEN_EX + "[+] Record created successfully")
 
     def delete_record(self):
+        self.print_table()
+        records_ids = self.database.get_ids_from_db(db_name=self.args.db_name[0])
+        records_ids = tuple(rid[0] for rid in records_ids)
+        given_user_id = int(input("Enter the ID: "))
+        if given_user_id not in records_ids:
+            print(Fore.LIGHTRED_EX + "[-] Invalid ID")
+        else:
+            self.database.delete_record(db_name=self.args.db_name[0],
+                                        record_id=given_user_id)
+            print(Fore.LIGHTGREEN_EX + "[+] Successfully Deletee")
+
+    def print_table(self):
         data = self.database.get_data_from_db(self.args.db_name[0])
-        print(" ", 46 * "⎽", sep="")
-        print(" ", "|", 10 * " ", "|", 16 * " ", "|", 16 * " ", "|", sep="")
-        print(" ", "|", "    ID    ", "|", 4 * " ", "USERNAME", 4 * " ", "|", 4 * " ", "PASSWORD", 4 * " ", "|", sep="")
-        print(" ", "|", 10 * " ", "|", 16 * " ", "|", 16 * " ", "|", sep="")
-        print(" ", 46 * "⎼", sep="")
-        for dataset in data:
-            encrypted_pass = len(dataset[2]) * "*"
-            print(" ", "|", dataset[0], (10 - len(str(dataset[0]))) * " ", "|", dataset[1], (16 - len(str(dataset[1]))) * " ", "|", encrypted_pass, (16 - len(encrypted_pass)) * " ", "|", sep="", flush=True)
-#s    def valid_user_input(self, input_data):
-#        for char in input_data:
-#            if char in punctuation:
-#                return False
-#        else:
-#            return True
+        print(" ", 46 * (Fore.LIGHTYELLOW_EX + "⎽"), sep="")
+        print(" ", Fore.LIGHTGREEN_EX + "|", 10 * " ", Fore.LIGHTGREEN_EX + "|", 16 * " ", Fore.LIGHTGREEN_EX + "|", 16 * " ", Fore.LIGHTGREEN_EX + "|", sep="")
+        print(" ", Fore.LIGHTGREEN_EX + "|", Fore.WHITE + "    ID    ", Fore.LIGHTGREEN_EX + "|", 4 * " ", Fore.WHITE + "USERNAME", 4 * " ", Fore.LIGHTGREEN_EX + "|", 4 * " ", Fore.WHITE + "PASSWORD", 4 * " ", Fore.LIGHTGREEN_EX + "|", sep="")
+        print(" ", Fore.LIGHTGREEN_EX + "|", 10 * " ", Fore.LIGHTGREEN_EX + "|", 16 * " ", Fore.LIGHTGREEN_EX + "|", 16 * " ", Fore.LIGHTGREEN_EX + "|", sep="")
+        print(" ", 46 * (Fore.LIGHTYELLOW_EX + "⎼"), sep="")
+
+        if data:
+            for dataset in data:
+                encrypted_pass = len(dataset[2]) * "*"
+                print(" ", Fore.LIGHTGREEN_EX + "|", dataset[0], (10 - len(str(dataset[0]))) * " ", Fore.LIGHTGREEN_EX + "|", dataset[1], (16 - len(str(dataset[1]))) * " ", Fore.LIGHTGREEN_EX + "|", encrypted_pass, (16 - len(encrypted_pass)) * " ", Fore.LIGHTGREEN_EX + "|", sep="", flush=True)
+            return data
+        else:
+            print(Fore.LIGHTYELLOW_EX + "[!] There are no data to display")
+
     def get_arguments(self):
         self.parser = ArgumentParser()
         self.parser.add_argument("-n",
@@ -119,4 +150,5 @@ class App:
         sleep(1)
         exit(code=0)
 if __name__ == "__main__":
+    init(autoreset=True)
     app = App()

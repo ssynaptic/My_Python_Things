@@ -27,10 +27,10 @@ class Database:
             conn.commit()
             conn.close()
 
-    def delete_database(self, db_name):
-        db_path = join(dirname(__file__), db_name)
-        if exists(db_path) and isdir(db_path):
-            remove(db_path)
+    # def delete_database(self, db_name):
+    #     db_path = join(dirname(__file__), db_name)
+    #     if exists(db_path) and isdir(db_path):
+    #         remove(db_path)
 
     def create_main_table(self, db_name):
         conn = connect(database=db_name,
@@ -54,8 +54,13 @@ VALUES ('{username}', '{password}')"""
         conn.commit()
         conn.close()
 
-    def delete_record(self, db_name):
-        pass
+    def delete_record(self, db_name, record_id):
+        conn = connect(database=db_name,
+                       timeout=1)
+        cursor = conn.cursor()
+        cursor.execute(f"DELETE FROM passwords WHERE id = {record_id}")
+        conn.commit()
+        conn.close()
 
     def get_data_from_db(self, db_name):
         conn = connect(database=db_name,
@@ -63,6 +68,18 @@ VALUES ('{username}', '{password}')"""
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM passwords;")
         data = cursor.fetchall()
+        conn.commit()
+        conn.close()
+        return data
+
+    def get_ids_from_db(self, db_name):
+        conn = connect(database=db_name,
+                       timeout=1)
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM passwords;")
+        data = cursor.fetchall()
+        conn.commit()
+        conn.close()
         return data
 
     def check_db_integrity(self, db_name):
