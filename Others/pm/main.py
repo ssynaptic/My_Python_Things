@@ -12,6 +12,9 @@ from signal import (signal,
                     SIGTSTP)
 from colorama import (init,
                       Fore)
+from os.path import (dirname,
+                     join,
+                     exists)
 class App:
     def __init__(self):
         signal(SIGINT, self.signal_handler)
@@ -21,17 +24,24 @@ class App:
     def main(self):
         self.database = Database()
         self.crypto_handler = CryptoHandler()
+
+        print(self.args.salt_size)
         self.database_name = self.args.db_name[0]
-        # check_db_results = self.database.check_db_name(db_name=self.args.db_name[0])
+        self.salt_size = self.args.salt_size
+
         check_db_results = self.database.check_db_name(db_name=self.database_name)
         if check_db_results == "is_valid":
             print("Welcome to the password manager")
             self.database.create_database(db_name=self.database_name)
             self.database.create_main_table(db_name=self.database_name)
-            self.given_db_password = getpass(prompt=Fore.WHITE + "Enter the password to encrypt the DB: ")
-            if not self.given_db_password:
-                print(Fore.LIGHTRED_EX + "[-] You must provide a password to encrypt the database")
-                exit(code=1)
+
+            password = self.get_db_password()
+
+            key = self.crypto_handler.generate_key(password=password,
+                                                   salt_size=self.salt_size,
+                                                   load_existing_salt=False,
+                                                   save_salt=True)
+
             print(Fore.LIGHTGREEN_EX + "[+] Passwords Database Created Successfully", end="\n\n")
             while True:
                 try:
@@ -51,18 +61,30 @@ class App:
                     if user_option == 4:
                         print(Fore.WHITE + "Exiting...")
                         break
- #                   else:
- #                       continue
                 except ValueError:
                     print("[!] The option must be a number not letter or punctuation symbol")
-                    break
-                except Exception as f:
+                    continue
+                except Exception:
                     print("[!] An unexpected error has ocurred")
-                    print(f)
                     break
+            encrypt_results = self.crypto_handler.encrypt(filename=self.database_name,
+                                                          key=key)
             exit(code=0)
         if check_db_results == "there_is_an_equal":
             print(Fore.LIGHTYELLOW_EX + "[!] There is an existing database with the same name, it will be opened...")
+            if not exists(join(dirname(__file__), "salt.salt")):
+                print(Fore.LIGHTRED_EX + "[-] The salt file needed to decrypt the database is missing")
+                exit(code=1)
+            password = self.get_db_password()
+
+            key = self.crypto_handler.generate_key(password=password,
+                                                   salt_size=self.salt_size,
+                                                   load_existing_salt=True,
+                                                   save_salt=False)
+
+            decrypt_results = self.crypto_handler.decrypt(filename=self.database_name,
+                                                          key=key)
+
             self.checking_table_results = self.database.check_db_integrity(db_name=self.database_name)
             if self.checking_table_results == "is_valid":
                 print(Fore.LIGHTGREEN_EX + "[+] The content of the database is not altered")
@@ -83,10 +105,7 @@ class App:
                             continue
                         if user_option == 4:
                             print(Fore.WHITE + "Exiting...")
-                            # exit(code=0)
                             break
-#                        else:
-#                            continue
                     except ValueError:
                         print(Fore.RED + "[!] The option must be a number not letter or punctuation symbol")
                         continue
@@ -98,6 +117,8 @@ class App:
                 print(Fore.LIGHTRED_EX + "[-] The content of the database is altered")
                 exit(code=1)
 
+            encrypt_results = self.crypto_handler.encrypt(filename=self.database_name,
+                                                          key=key)
             exit(code=0)
 
         if check_db_results == "is_invalid":
@@ -114,7 +135,7 @@ class App:
                                         password=user_password)
             print(Fore.LIGHTGREEN_EX + "[+] Record created successfully")
         else:
-            print(Fore.LIGHTRED_EX + "[!] Enter a longer username and/or password")
+            print(Fore.LIGHTRED_EX + "[-] Enter a longer username and/or password")
 
     def delete_record(self):
         self.print_table()
@@ -147,19 +168,40 @@ class App:
         else:
             print("", Fore.LIGHTYELLOW_EX + "[!] No records to display")
 
+    def get_db_password(self):
+        password = getpass(prompt=Fore.WHITE + "Enter the password to encrypt the DB: ")
+
+        if not password:
+            print(Fore.LIGHTRED_EX + "[-] You must provide a password to encrypt the database")
+            exit(code=1)
+
+        if not len(password) >= 10:
+            print(Fore.LIGHTRED_EX + "[-] The password must be at least 10 characters long")
+            exit(code=1)
+        return password
+
     def get_arguments(self):
         self.parser = ArgumentParser()
         self.parser.add_argument("-n",
                                  "--name",
                                  action="store",
                                  nargs=1,
-                                 default=None,
+                                 default="passwords",
                                  type=str,
                                  required=True,
                                  help="Database Name",
                                  metavar="<DB_NAME>",
                                  dest="db_name")
-        self.parser.add_argument("")
+        self.parser.add_argument("-s",
+                                 "--salt-size",
+                                 action="store",
+                                 nargs=1,
+                                 default=16,
+                                 type=int,
+                                 required=False,
+                                 help="Salt Size For The Password",
+                                 metavar="<SALT_SIZE>",
+                                 dest="salt_size")
         self.args = self.parser.parse_args()
 
     def signal_handler(self, signum, frame):

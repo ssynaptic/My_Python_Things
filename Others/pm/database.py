@@ -27,11 +27,6 @@ class Database:
             conn.commit()
             conn.close()
 
-    # def delete_database(self, db_name):
-    #     db_path = join(dirname(__file__), db_name)
-    #     if exists(db_path) and isdir(db_path):
-    #         remove(db_path)
-
     def create_main_table(self, db_name):
         conn = connect(database=db_name,
                        timeout=1)
@@ -92,9 +87,7 @@ VALUES ('{username}', '{password}')"""
 sqlite_schema WHERE type = \"table\" AND name NOT LIKE
 \"sqlite_%\";"""
         checking = cursor.execute(checking_instruction).fetchall()
-        #if self.checking_results:
         if len(checking) == 1 and len(checking[0]) == 1 and checking[0][0] == "passwords":
-            # return self.checking_results.fetchall()
             return "is_valid"
         else:
             return "is_invalid"

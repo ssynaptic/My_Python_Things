@@ -1,20 +1,11 @@
-# from cryptography.fernet import Fernet
-
-# def write_key():
-#     key = Fernet.generate_key()
-#     with open("key.key", "wb") as file:
-#         file.write(key)
-
-# def load_key():
-#     return open("key.key", "rb").read()
-
-import cryptography
 from cryptography.fernet import Fernet
-from cryptography.hazmat.primitives.kdf import scrypt
-
+from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
+from os.path import (dirname,
+                     join,
+                     exists)
+import cryptography
 import secrets
 import base64
-# import getpass
 
 class CryptoHandler:
     def __init__(self):
@@ -22,18 +13,19 @@ class CryptoHandler:
 
     def generate_salt(self, size=16):
         return secrets.token_bytes(nbytes=size)
-    
+
     def derive_key(self, salt, password):
-        kdf = scrypt(salt=salt,
+        kdf = Scrypt(salt=salt,
                      length=32,
                      n=2**14,
                      r=8,
                      p=1)
         return kdf.derive(password.encode(encoding="utf-8"))
-    
+
     def load_salt(self):
-        return open("salt.salt", "rb").read()
-    
+       salt_path = join(dirname(__file__), "salt.salt")
+       return open("salt.salt", "rb").read()
+
     def generate_key(self, password, salt_size, load_existing_salt=False, save_salt=True):
         if load_existing_salt:
             salt = self.load_salt()
@@ -44,7 +36,7 @@ class CryptoHandler:
         derived_key = self.derive_key(salt=salt,
                                       password=password)
         return base64.urlsafe_b64encode(derived_key)
-    
+
     def encrypt(self, filename, key):
         f = Fernet(key=key)
         with open(filename, "rb") as file:
@@ -55,22 +47,25 @@ class CryptoHandler:
         with open(filename, "wb") as file:
             file.write(encrypted_data)
 
+        return "encrypted_successfully"
+
     def decrypt(self, filename, key):
         f = Fernet(key)
         with open(filename, "rb") as file:
             encrypted_data = file.read()
-
         try:
             decrypted_data = f.decrypt(encrypted_data)
+            with open(filename, "wb") as file:
+                file.write(decrypted_data)
+
+            return "decrypted_succesfully"
 
         except cryptography.fernet.InvalidToken:
-            return
-        
+            return "decrypted_failed"
+
         with open(filename, "wb") as file:
             file.write(decrypted_data)
 
-if __name__ == "__main__":
-    pass
     # write_key()
     # key = load_key()
     # print(key)
