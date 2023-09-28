@@ -119,21 +119,35 @@ class LoginForm(ctk.CTkFrame):
     def get_data(self):
         username = self.username_input.get()
         password = self.password_input.get()
-        # showinfo(message=f"{username}-{password}")
-        #if any(punctuation) in username:
+
         for char in username:
             if char in string.punctuation:
                 showerror(message="Bad username. Verify that not contain special symbols")
                 return
-        # <database_functiom>
-        self.backend.create_database()
-        self.backend.create_users_table()
-        self.backend.create_user(username=username,
-                                 password=password)
-        data = self.backend.check_if_user_exists(username=username,
-                                                 password=password)
-        if data:
-            showinfo(message=data)
+        db_results = self.backend.check_if_db_exists()
+        print(db_results)
+        if db_results == "is_valid":
+            self.backend.create_database()
+            self.backend.create_users_table()
+            self.backend.create_user(username=username,
+                                     password=password)
+        if db_results == "there_is_an_equal":
+            db_integrity = self.backend.check_db_integrity()
+            print(db_integrity)
+            if db_integrity == "is_valid":
+                self.backend.create_user(username=username,
+                                         password=password)
+                showinfo(title="Success",
+                         message="User created successfully")
+                return
+            else:
+                showerror(title="Error",
+                          message="The content of the database appears to be altered")
+                return
+#        data = self.backend.check_if_user_exists(username=username,
+#                                                 password=password)
+#        if data:
+#            showinfo(message=data)
 
 class App(ctk.CTk):
     def __init__(self, img_folder_path):
