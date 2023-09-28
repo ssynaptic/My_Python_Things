@@ -1,12 +1,17 @@
 import customtkinter as ctk
+from tkinter.messagebox import (showinfo,
+                                showerror)
 import tkinter as tk
+from signupbackend import SignUpBackend
 from PIL import Image
 from os.path import (dirname,
                      join)
+import string
 
 class LoginForm(ctk.CTkFrame):
     def __init__(self, img_folder_path, **kwargs):
         super().__init__(**kwargs)
+        self.backend = SignUpBackend()
         app_image_path = join(img_folder_path, "logo.png")
         app_image = ctk.CTkImage(Image.open(app_image_path), size=(100, 100))
 
@@ -37,17 +42,6 @@ class LoginForm(ctk.CTkFrame):
                             border_color="#44ff00")
         form.place(x=320, y=80)
 
-#        signup_message = ctk.CTkLabel(master=form,
-#                                      width=None,
-#                                      height=None,
-#                                      corner_radius=0,
-#                                      bg_color="#ffffff",
-#                                      fg_color="#ffffff",
-#                                      text_color="#000000",
-#                                      text_color_disabled="#000000",
-#                                      text="Sign Up",
-#                                      font=("JetBrains Mono", 15))
-
         signup_message = ctk.CTkLabel(master=form,
                                       width=150,
                                       height=30,
@@ -67,7 +61,7 @@ class LoginForm(ctk.CTkFrame):
         signup_message_x = (form_container_width // 2) - (150 // 2)
         signup_message.place(x=signup_message_x, y=10)
 
-        username_input = ctk.CTkEntry(master=form,
+        self.username_input = ctk.CTkEntry(master=form,
                                       width=190,
                                       height=30,
                                       corner_radius=7,
@@ -83,9 +77,9 @@ class LoginForm(ctk.CTkFrame):
                                       justify="center")
         form.update()
         inputs_x = (form_container_width // 2) - (190 // 2)
-        username_input.place(x=inputs_x, y=60)
+        self.username_input.place(x=inputs_x, y=60)
 
-        password_input = ctk.CTkEntry(master=form,
+        self.password_input = ctk.CTkEntry(master=form,
                                       width=190,
                                       height=30,
                                       corner_radius=7,
@@ -100,11 +94,11 @@ class LoginForm(ctk.CTkFrame):
                                       state="normal",
                                       justify="center",
                                       show="*")
-        password_input.place(x=inputs_x, y=110)
+        self.password_input.place(x=inputs_x, y=110)
 
         login_button = ctk.CTkButton(master=form,
                                      width=150,
-                                     height=28,
+                                     height=35,
                                      corner_radius=7,
                                      border_width=0,
                                      bg_color="#ffffff",
@@ -117,10 +111,29 @@ class LoginForm(ctk.CTkFrame):
                                      font=("Jetbrains Mono", 20),
                                      state="normal",
                                      hover=True,
-                                     #command=None,
+                                     command=self.get_data,
                                      anchor="center")
         login_button_x = (form_container_width // 2) - (150 // 2)
         login_button.place(x=login_button_x, y=160)
+
+    def get_data(self):
+        username = self.username_input.get()
+        password = self.password_input.get()
+        # showinfo(message=f"{username}-{password}")
+        #if any(punctuation) in username:
+        for char in username:
+            if char in string.punctuation:
+                showerror(message="Bad username. Verify that not contain special symbols")
+                return
+        # <database_functiom>
+        self.backend.create_database()
+        self.backend.create_users_table()
+        self.backend.create_user(username=username,
+                                 password=password)
+        data = self.backend.check_if_user_exists(username=username,
+                                                 password=password)
+        if data:
+            showinfo(message=data)
 
 class App(ctk.CTk):
     def __init__(self, img_folder_path):
@@ -133,6 +146,8 @@ class App(ctk.CTk):
                            width=600,
                            height=500)
         self.configure(fg_color="#ffffff")
+
+        #self.backend = Backend()
 
         login_form = LoginForm(img_folder_path=img_folder_path,
                                master=self,
