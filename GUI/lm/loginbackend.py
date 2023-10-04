@@ -5,37 +5,9 @@ from os.path import (exists,
                      expanduser)
 from getpass import getuser
 
-class SignUpBackend:
+class LogInBackend:
     def __init__(self):
         pass
-
-    def create_database(self):
-        home = self.get_home_path()
-        conn = connect(join(home, "lm.db"))
-        conn.commit()
-        conn.close()
-
-    def create_users_table(self):
-        home = self.get_home_path()
-        conn = connect(join(home, "lm.db"))
-        cursor = conn.cursor()
-        sql_instruct = """CREATE TABLE users
-        (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL,
-        password TEXT NOT NULL);"""
-        cursor.execute(sql_instruct)
-        conn.commit()
-        conn.close()
-
-    def create_user(self, username, password):
-        home = self.get_home_path()
-        conn = connect(join(home, "lm.db"))
-        cursor = conn.cursor()
-        cursor.execute(f"""INSERT INTO users
-        (username, password) VALUES
-        ('{username}', '{password}');""")
-        conn.commit()
-        conn.close()
 
     def check_if_db_exists(self):
         home_path = self.get_home_path()
@@ -43,9 +15,9 @@ class SignUpBackend:
         if exists(db_path) and isdir(db_path):
             db_is_valid = "is_invalid"
         if exists(db_path) and not isdir(db_path):
-            db_is_valid = "there_is_an_equal"
-        if not exists(db_path) and not isdir(db_path):
             db_is_valid = "is_valid"
+        if not exists(db_path) and not isdir(db_path):
+            db_is_valid = "is_invalid"
         return db_is_valid
 
     def check_db_integrity(self):
