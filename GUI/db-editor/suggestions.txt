@@ -1,0 +1,18 @@
+Sugerencias para archivo de configuracion:
+Para un programa que es un editor de bases de datos en GUI hecho con Tkinter para bases de datos SQLite, aquí tienes algunas configuraciones que podrían ser útiles en el archivo de configuración:
+
+1. Ruta de la base de datos predeterminada: Puede ser útil tener una opción para especificar la ruta predeterminada de la base de datos SQLite que se abrirá al iniciar el programa.
+
+2. Tema de la interfaz de usuario: Podrías permitir que los usuarios elijan entre diferentes temas para la interfaz de usuario, como temas claros u oscuros.
+
+3. Tamaño y posición de la ventana: Permitir que los usuarios configuren el tamaño y la posición predeterminados de la ventana principal del programa.
+
+4. Configuración de la conexión a la base de datos: Opciones para configurar parámetros de conexión a la base de datos, como el nombre de usuario, la contraseña, el host, el puerto, etc., en caso de que se necesiten para conectarse a bases de datos remotas.
+
+5. Historial de bases de datos recientes: Mantener un historial de las bases de datos abiertas recientemente para que los usuarios puedan acceder fácilmente a ellas sin tener que buscarlas manualmente.
+
+6. Preferencias de visualización de datos: Opciones para configurar cómo se muestran y organizan los datos en la GUI, como el número de filas y columnas a mostrar, el tamaño de la fuente, el formato de fecha/hora, etc.
+
+7. Configuración de seguridad: Si el programa maneja datos sensibles, podrías incluir configuraciones relacionadas con la seguridad, como la encriptación de la base de datos, la autenticación de dos factores, etc.
+
+Recuerda que no es necesario incluir todas estas configuraciones en el archivo de configuración. Debes elegir aquellas que sean más relevantes y útiles para tu aplicación específica. Además, es importante diseñar la interfaz de usuario de tu aplicación de manera que estas configuraciones sean fáciles de modificar y aplicar por parte de los usuarios.

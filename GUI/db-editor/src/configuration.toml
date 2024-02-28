@@ -1,0 +1,5 @@
+"default_db_path" = "<root>"
+"user_interface_theme" = "dark" # Available themes are: dark, light
+"width" = 400
+"height" = 300
+"window_position" = "center" # Available window positions are: center
