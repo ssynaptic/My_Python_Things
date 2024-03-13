@@ -4,12 +4,21 @@ from configuration import get_configuration
 
 from getpass import getpass
 from hashlib import sha512
+from db_handler import (
+    # Create
+    create_default_tables,
+    create_usr_db,
+    # Read
+    check_tables_exist,
+    check_user_exist,
+    # Update
 
-from db_handler import (list_tables, create_default_tables,
-    write_record, get_records)
+    # Delete
+
+)
 
 class App:
-    def __init(self) -> None:
+    def __init__(self) -> None:
         """
             Load the configuration file and its content and run the app
         """
@@ -40,16 +49,18 @@ class App:
         if not uname:
             print("You must provide a username")
             exit(1)
-        passwd: str = getpass()
+        passwd: bytes = bytes(getpass(), encoding="utf-8")
         if passwd:
-            if len(passwd) < 10:
+            if len(passwd) < 8:
                 print("Password too short")
                 exit(1)
             else:
-                passwd_hash: str = sha512(string=passwd.encode()).hexdigest()
-                print(passwd_hash)
-                data = get_records(table="users", data=[uname, passwd])
-                exit(0)
+                # Get the hexadecimal version of the hash
+                passwd_hash: str = sha512(string=passwd).hexdigest()
+                # data = get_users()
+                if check_user_exist(uname=uname, passwd=passwd_hash,
+                                    all_credentials=True):
+                    print("[+] Logged In")
         else:
             print("You must provide a password")
             exit(1)
@@ -61,16 +72,14 @@ class App:
         if not uname:
             print("You must provide a username")
             exit(1)
-        passwd: str = getpass()
+        passwd: bytes = bytes(getpass(), encoding="utf-8")
         if passwd:
             if len(passwd) < 10:
                 print("Password too short")
                 exit(1)
             else:
-                passwd_hash: str = sha512(string=passwd.encode()).hexdigest()
-                r = get_records("users", data=[uname, passwd_hash])
-                breakpoint()
-                write_record(table="users", data=[uname, passwd_hash, 0])
+                passwd_hash: str = sha512(string=passwd).hexdigest()
+                create_usr_db(uname=uname, passwd=passwd_hash, is_staff=0)
                 print("[+] Account created successfully, now Log In")
                 exit(0)
         else:
