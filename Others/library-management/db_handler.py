@@ -64,6 +64,7 @@ def check_tables_exist(table_names: List[str]) -> bool:
 
 def check_user_exist(uname: str, passwd: str, all_credentials: bool = False,
                         all_users: bool = False) -> Dict[str, str] | bool:
+    # Return all the users and his passwords
     if all_users:
         try:
             conn: Connection = sqlite_connect("db.sqlite3")
@@ -84,8 +85,11 @@ def check_user_exist(uname: str, passwd: str, all_credentials: bool = False,
             conn: Connection = sqlite_connect("db.sqlite3")
             cursor: Cursor = conn.cursor()
             query: str = "SELECT username, password FROM users WHERE username = ? "
+            # Verify username and password for login authentication
             if all_credentials:
                 query = query + "AND password  = ?;"
+            # Check if any user already exists with the
+            # username and/or password provided
             else:
                 query = query + "OR password  = ?;"
             params: Tuple[str, str] = (uname, passwd)
@@ -93,7 +97,7 @@ def check_user_exist(uname: str, passwd: str, all_credentials: bool = False,
             result = cursor.fetchone()
             return True if result else False
         except Exception as e:
-            print(f"[-] Error: {e}")
+            print(f"[-] Error: {e}, try signing up")
             return False
         finally:
             conn.close()

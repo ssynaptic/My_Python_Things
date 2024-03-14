@@ -16,7 +16,8 @@ from db_handler import (
     # Delete
 
 )
-
+# For colorize text
+from colorama import Fore
 class App:
     def __init__(self) -> None:
         """
@@ -29,62 +30,48 @@ class App:
             Main functionality of the app
         """
         try:
-            choice = int(input("1- Log In\n2 - Sign Up\n"))
+            choice = int(input(Fore.LIGHTGREEN_EX + "1- Log In\n2 - Sign Up\n"))
+            uname: str = input(Fore.LIGHTGREEN_EX + "Enter your username: ")
+            if not uname:
+                print(Fore.LIGHTRED_EX + "[-] You must provide a username")
+                exit(1)
+            passwd: bytes = bytes(getpass(), encoding="utf-8")
+            if passwd:
+                if len(passwd) < 8:
+                    print(Fore.LIGHTRED_EX + "[-] Password too short")
+                    exit(1)
+                else:
+                    # Convert hash to a hexadecimal string
+                    passwd_hash: str = sha512(string=passwd).hexdigest()
+            else:
+                print(Fore.LIGHTRED_EX + "[-] You must provide a password")
+                exit(1)
         except ValueError:
-            print("[-] You must select an option")
+            print(Fore.LIGHTRED_EX + "[-] You must select an option")
             exit(1)
         match choice:
             case 1:
-                self.log_in()
+                self.log_in(uname=uname, passwd_hash=passwd_hash)
             case 2:
-                self.sign_up()
+                self.sign_up(uname=uname, passwd_hash=passwd_hash)
             case _:
-                print("Enter a valid option")
+                print(Fore.LIGHTRED_EX + "[-] Enter a valid option")
                 exit(1)
-    def log_in(self) -> None:
+    def log_in(self, uname: str, passwd_hash: str) -> None:
         """
             Functionality for Log In the platform
         """
-        uname: str = input("Enter your username: ")
-        if not uname:
-            print("You must provide a username")
-            exit(1)
-        passwd: bytes = bytes(getpass(), encoding="utf-8")
-        if passwd:
-            if len(passwd) < 8:
-                print("Password too short")
-                exit(1)
-            else:
-                # Get the hexadecimal version of the hash
-                passwd_hash: str = sha512(string=passwd).hexdigest()
-                # data = get_users()
-                if check_user_exist(uname=uname, passwd=passwd_hash,
-                                    all_credentials=True):
-                    print("[+] Logged In")
+        if check_user_exist(uname=uname, passwd=passwd_hash,
+                            all_credentials=True):
+            print("[+] Logged In.")
         else:
-            print("You must provide a password")
-            exit(1)
-    def sign_up(self) -> None:
+            print("[-] Wrong username and/or password.")
+    def sign_up(self, uname: str, passwd_hash: str) -> None:
         """
             Functionality for Sign Up in the plaform
         """
-        uname: str = input("Enter your username: ")
-        if not uname:
-            print("You must provide a username")
-            exit(1)
-        passwd: bytes = bytes(getpass(), encoding="utf-8")
-        if passwd:
-            if len(passwd) < 10:
-                print("Password too short")
-                exit(1)
-            else:
-                passwd_hash: str = sha512(string=passwd).hexdigest()
-                create_usr_db(uname=uname, passwd=passwd_hash, is_staff=0)
-                print("[+] Account created successfully, now Log In")
-                exit(0)
-        else:
-            print("You must provide a password")
-            exit(1)
+        create_usr_db(uname=uname, passwd=passwd_hash, is_staff=0)
+        print("[+] Account created successfully, now Log In")
 if __name__ == "__main__":
     a = App()
     a.main()
